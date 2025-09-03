@@ -3,7 +3,7 @@
  * Minimal working version that matches Fynd GraphQL API
  */
 
-import { gql } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 
 /**
  * Get home page content - fallback to empty query

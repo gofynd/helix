@@ -3,7 +3,7 @@
  * Updated to match current Fynd GraphQL API schema
  */
 
-import { gql } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 
 /**
  * Media/Image fragment - matches actual API response

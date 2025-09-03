@@ -9,7 +9,7 @@
  */
 
 // import { GraphQLError } from 'graphql';
-import { ApolloError } from '@apollo/client';
+import { ApolloError } from '@apollo/client/core';
 
 /**
  * Base application error with structured properties

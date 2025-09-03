@@ -3,7 +3,7 @@
  * Minimal working version that matches tested Fynd GraphQL API
  */
 
-import { gql } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 import {
   PRODUCT_BASIC_FRAGMENT,
   PAGINATION_FRAGMENT,

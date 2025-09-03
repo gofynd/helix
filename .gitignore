@@ -88,7 +88,15 @@ dist
 
 # Gatsby files
 .cache/
-public
+
+# Public directory - keep structure, ignore compiled files
+public/css/*.css
+public/css/*.css.map
+public/js/*.js
+public/js/*.js.map
+# But keep the directory structure
+!public/css/.gitkeep
+!public/js/.gitkeep
 
 # Storybook build outputs
 .out
