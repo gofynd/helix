@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    {# SEO Meta Tags #}
+    <title>{{ seo.title | default('Fynd Storefront') }}</title>
+    <meta name="description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    <link rel="canonical" href="{{ seo.canonical }}">
+    
+    {# Open Graph Meta Tags #}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ seo.title | default('Fynd Storefront') }}">
+    <meta property="og:description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    <meta property="og:url" content="{{ seo.canonical }}">
+    {% if seo.image %}
+    <meta property="og:image" content="{{ seo.image }}">
+    {% endif %}
+    
+    {# Twitter Card Meta Tags #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo.title | default('Fynd Storefront') }}">
+    <meta name="twitter:description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    {% if seo.image %}
+    <meta name="twitter:image" content="{{ seo.image }}">
+    {% endif %}
+    
+    {# Favicon #}
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    {# Page-Specific Styles - Direct Load #}
+    {% set cssFiles = getCSSFiles(req) %}
+    {% for cssFile in cssFiles %}
+    <link rel="stylesheet" href="{{ cssFile }}">
+    {% endfor %}
+    
+    {# Additional page-specific styles #}
+    {% block styles %}{% endblock %}
+    
+    {# Fonts #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    {# JSON-LD Structured Data #}
+    {% if schema %}
+    {% for key, data in schema %}
+    <script type="application/ld+json">
+        {{ data | json | safe }}
+    </script>
+    {% endfor %}
+    {% endif %}
+    
+    {# Additional head content #}
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block bodyClass %}{% endblock %}">
+    {# Skip to main content for accessibility #}
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    {# Header #}
+    {% include "partials/header.njk" %}
+    
+    {# Breadcrumbs #}
+    {% if breadcrumbs and breadcrumbs.length > 1 %}
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol class="breadcrumbs__list">
+            {% for crumb in breadcrumbs %}
+            <li class="breadcrumbs__item">
+                {% if loop.last %}
+                    <span class="breadcrumbs__current" aria-current="page">{{ crumb.name }}</span>
+                {% else %}
+                    <a href="{{ crumb.url }}" class="breadcrumbs__link">{{ crumb.name }}</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
+    {% endif %}
+    
+    {# Main Content #}
+    <main id="main-content" class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    {# Footer #}
+    {% include "partials/footer.njk" %}
+    
+    {# Scripts #}
+    <script src="/static/js/main.js"></script>
+    {% block scripts %}{% endblock %}
+    
+    {# Development only scripts #}
+    {% if env === 'development' %}
+    <script>
+        console.log('Fynd Storefront SSR v{{ version }}');
+        console.log('Cache Stats:', {{ cacheStats() | json | safe }});
+    </script>
+    {% endif %}
+</body>
+</html>

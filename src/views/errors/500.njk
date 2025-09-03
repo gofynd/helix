@@ -1,0 +1,82 @@
+{% extends "layouts/base.njk" %}
+
+{% block bodyClass %}error-page error-page--500{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        
+        <h1 class="error-title">Something went wrong</h1>
+        <p class="error-description">
+            We're experiencing technical difficulties. Our team has been notified 
+            and is working to fix the issue. Please try again in a few minutes.
+        </p>
+        
+        <div class="error-actions">
+            <a href="javascript:location.reload()" class="btn btn--primary">Try Again</a>
+            <a href="/" class="btn btn--secondary">Go Home</a>
+        </div>
+        
+        {% if error.traceId %}
+        <p class="error-trace">
+            <small>Error ID: {{ error.traceId }}</small>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 48px 16px;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 500px;
+}
+
+.error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    color: #dc3545;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-trace {
+    margin-top: 32px;
+    color: #adb5bd;
+}
+</style>
+{% endblock %}

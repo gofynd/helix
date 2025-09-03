@@ -1,0 +1,135 @@
+{% extends "layouts/base.njk" %}
+
+{% block bodyClass %}categories-page{% endblock %}
+
+{% block content %}
+<div class="categories">
+    <div class="container">
+        {# Page Header #}
+        <div class="categories-page__header">
+            <h1 class="categories-page__title">
+                {% if selectedDepartment %}
+                {{ selectedDepartment | title }} Categories
+                {% else %}
+                All Categories
+                {% endif %}
+            </h1>
+            <p class="categories-page__subtitle">
+                Explore our wide range of product categories and find exactly what you're looking for.
+            </p>
+        </div>
+
+        {# Department Filter #}
+        {% if departments and departments.length > 0 %}
+        <div class="department-filter">
+            <a href="/categories" 
+               class="department-filter__item {{ 'department-filter__item--active' if not selectedDepartment }}">
+                All Departments
+            </a>
+            {% for dept in departments %}
+            <a href="/categories?department={{ dept.slug }}" 
+               class="department-filter__item {{ 'department-filter__item--active' if selectedDepartment === dept.slug }}">
+                {{ dept.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Categories Grid #}
+        {% if categories and categories.length > 0 %}
+        <div class="categories-grid">
+            {% for category in categories %}
+            <article class="category-item {{ 'category-item--featured' if loop.index <= 3 }}">
+                <a href="/category/{{ category.slug }}" class="category-item__link">
+                    <div class="category-item__image">
+                        {% if category.logo and category.logo.url %}
+                        <img 
+                            src="{{ category.logo.url }}"
+                            alt="{{ category.logo.alt | default(category.name) }}"
+                            loading="lazy"
+                        >
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="category-item__title">{{ category.name }}</h3>
+                    {% if category.description %}
+                    <p class="category-item__description">{{ category.description | truncate(120) }}</p>
+                    {% endif %}
+                    
+                    {# Product count if available #}
+                    {% if category.product_count %}
+                    <span class="category-item__count">{{ category.product_count }} products</span>
+                    {% endif %}
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        {# Empty State #}
+        <div class="categories-empty">
+            <div class="categories-empty__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </div>
+            <h2 class="categories-empty__title">No Categories Found</h2>
+            <p class="categories-empty__description">
+                {% if selectedDepartment %}
+                No categories found for the selected department. Try browsing all categories.
+                {% else %}
+                We're working on adding categories. Check back soon!
+                {% endif %}
+            </p>
+            <div class="categories-empty__actions">
+                {% if selectedDepartment %}
+                <a href="/categories" class="btn btn--primary">View All Categories</a>
+                {% else %}
+                <a href="/products" class="btn btn--primary">Browse All Products</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Statistics Section #}
+        {% if categories and categories.length > 0 %}
+        <section class="categories-stats">
+            <div class="categories-stats__container">
+                <div class="categories-stats__grid">
+                    <div class="categories-stats__item">
+                        <div class="categories-stats__number">{{ categories.length }}</div>
+                        <div class="categories-stats__label">Categories</div>
+                    </div>
+                    <div class="categories-stats__item">
+                        <div class="categories-stats__number">{{ departments.length | default(0) }}</div>
+                        <div class="categories-stats__label">Departments</div>
+                    </div>
+                    <div class="categories-stats__item">
+                        <div class="categories-stats__number">34</div>
+                        <div class="categories-stats__label">Products</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {# Call to Action #}
+        <section class="text-center" style="margin-top: 4rem;">
+            <h2 class="h2 mb-4">Can't Find What You're Looking For?</h2>
+            <p class="text-large text-secondary mb-6">
+                Browse our complete product collection or use our search to find specific items.
+            </p>
+            <div class="flex-center" style="gap: 1rem;">
+                <a href="/products" class="btn btn--primary btn--large">View All Products</a>
+                <a href="/" class="btn btn--secondary btn--large">Back to Home</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

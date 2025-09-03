@@ -1,0 +1,81 @@
+{% extends "layouts/base.njk" %}
+
+{% block bodyClass %}error-page error-page--404{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+        </div>
+        
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-description">
+            Sorry, we couldn't find the page you're looking for. 
+            It might have been moved, deleted, or you entered the wrong URL.
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn--primary">Go Home</a>
+            <a href="/products" class="btn btn--secondary">Browse Products</a>
+        </div>
+        
+        {% if error.traceId %}
+        <p class="error-trace">
+            <small>Error ID: {{ error.traceId }}</small>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 48px 16px;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 500px;
+}
+
+.error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    color: #6c757d;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.error-description {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-trace {
+    margin-top: 32px;
+    color: #adb5bd;
+}
+</style>
+{% endblock %}

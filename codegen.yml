@@ -1,0 +1,29 @@
+overwrite: true
+schema:
+  - 'https://api.fynd.com/service/application/graphql':
+      headers:
+        authorization: 'Bearer ${FYND_AUTH_TOKEN}'
+        content-type: 'application/json'
+documents: 'src/graphql/**/*.ts'
+generates:
+  src/types/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      - 'typed-document-node'
+    config:
+      useIndexSignature: true
+      skipTypename: false
+      enumsAsTypes: true
+      constEnums: true
+      namingConvention:
+        typeNames: pascal-case#pascalCase
+        enumValues: upper-case#upperCase
+      scalars:
+        DateTime: string
+        Date: string
+        JSON: any
+        Upload: File
+      hooks:
+        afterAllFileWrite:
+          - prettier --write

@@ -1,0 +1,287 @@
+/**
+ * CSS Reset and Base Styles
+ * 
+ * Modern CSS reset with sensible defaults
+ */
+
+@import '../utils/variables.less';
+@import '../utils/mixins.less';
+
+// ============================================================================
+// CSS Reset
+// ============================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  line-height: @line-height-normal;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: @font-family-sans;
+  font-size: @font-size-base;
+  font-weight: @font-weight-normal;
+  line-height: @line-height-normal;
+  color: @text-primary;
+  background-color: @body-bg;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// ============================================================================
+// Typography Reset
+// ============================================================================
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+b, strong {
+  font-weight: @font-weight-bold;
+}
+
+small {
+  font-size: @font-size-sm;
+}
+
+// ============================================================================
+// List Reset
+// ============================================================================
+
+ul, ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// ============================================================================
+// Form Reset
+// ============================================================================
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+
+button:focus {
+  outline: 1px dotted;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  opacity: 1;
+  color: @text-muted;
+}
+
+[role='button'] {
+  cursor: pointer;
+}
+
+// ============================================================================
+// Media Reset
+// ============================================================================
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  vertical-align: middle;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  fill: currentColor;
+}
+
+// ============================================================================
+// Table Reset
+// ============================================================================
+
+table {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+}
+
+// ============================================================================
+// Interactive Elements
+// ============================================================================
+
+summary {
+  display: list-item;
+  cursor: pointer;
+}
+
+// ============================================================================
+// Accessibility
+// ============================================================================
+
+// Screen reader only utility
+.sr-only {
+  .sr-only();
+}
+
+// Skip link for keyboard navigation
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: @spacing-2;
+  background: @black;
+  color: @white;
+  padding: @spacing-2 @spacing-3;
+  text-decoration: none;
+  .rounded(@border-radius-sm);
+  z-index: @z-index-tooltip;
+  .font-size(@font-size-sm);
+  
+  &:focus {
+    top: @spacing-2;
+  }
+}
+
+// Focus visible for better accessibility
+:focus-visible {
+  outline: 2px solid @primary-color;
+  outline-offset: 2px;
+}
+
+// Remove focus outline for mouse users
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// ============================================================================
+// Print Styles
+// ============================================================================
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: @black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+  }
+
+  abbr[title]::after {
+    content: ' (' attr(title) ')';
+  }
+
+  a[href^='#']::after,
+  a[href^='javascript:']::after {
+    content: '';
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+  }
+
+  pre,
+  blockquote {
+    border: 1px solid @gray-500;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

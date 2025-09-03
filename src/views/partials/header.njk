@@ -1,0 +1,137 @@
+{# Header with navigation #}
+<header class="nav-tw sticky top-0 z-50" role="banner">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16 lg:h-20">
+            {# Logo #}
+            <div class="flex-shrink-0">
+                <a href="/" class="nav-tw-brand" aria-label="Fynd Storefront Home">
+                    <img src="/static/images/logo.svg" alt="Fynd Storefront" class="h-8 w-auto">
+                </a>
+            </div>
+            
+            {# Search Bar - Desktop #}
+            <div class="hidden lg:flex flex-1 max-w-lg mx-8">
+                <form class="w-full" action="/products" method="GET" role="search">
+                    <div class="relative">
+                        <label for="search-input" class="sr-only">Search products</label>
+                        <input 
+                            type="search" 
+                            id="search-input"
+                            name="search" 
+                            class="w-full px-4 py-2 pr-10 text-gray-900 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200" 
+                            placeholder="Search products..." 
+                            value="{{ searchQuery | default('') }}"
+                            autocomplete="off"
+                            aria-describedby="search-help"
+                        >
+                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors duration-200" aria-label="Search">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                        <div id="search-help" class="sr-only">
+                            Press Enter or click the search button to search for products
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+        {# Navigation Menu - Desktop #}
+        <nav class="hidden lg:flex" role="navigation" aria-label="Main navigation">
+            <div class="flex space-x-8">
+                <a href="/products" class="nav-tw-link">Products</a>
+                <a href="/categories" class="nav-tw-link">Categories</a>
+                <a href="/brands" class="nav-tw-link">Brands</a>
+                {% if navigation and navigation.items %}
+                {% for item in navigation.items %}
+                    <a href="{{ item.action.page.url | default('#') }}" class="nav-tw-link">
+                        {{ item.display }}
+                    </a>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </nav>
+        
+        {# User Actions #}
+        <div class="flex items-center space-x-4">
+            {# Account #}
+            <a href="/account" class="hidden md:flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors duration-200" aria-label="My Account">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="text-sm font-medium">Account</span>
+            </a>
+            
+            {# Wishlist #}
+            <a href="/wishlist" class="hidden md:flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors duration-200" aria-label="Wishlist">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span class="text-sm font-medium">Wishlist</span>
+            </a>
+            
+            {# Cart #}
+            <a href="/cart" class="relative flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors duration-200" aria-label="Shopping Cart">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span class="hidden md:inline text-sm font-medium">Cart</span>
+                <span class="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="cart-count">0</span>
+            </a>
+        </div>
+        
+        {# Mobile Menu Toggle #}
+        <button class="lg:hidden p-2 text-gray-700 hover:text-primary-600 transition-colors duration-200" aria-label="Toggle mobile menu" aria-expanded="false" onclick="toggleMobileMenu()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        </div>
+    
+    {# Mobile Navigation #}
+    <div class="lg:hidden hidden bg-white border-t border-gray-200" id="mobile-nav">
+        <div class="container mx-auto px-4 py-4">
+            {# Mobile Search #}
+            <form class="mb-4" action="/products" method="GET" role="search">
+                <div class="relative">
+                    <input 
+                        type="search" 
+                        name="search" 
+                        class="w-full px-4 py-2 pr-10 text-gray-900 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white" 
+                        placeholder="Search products..." 
+                        value="{{ searchQuery | default('') }}"
+                    >
+                    <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+            
+            {# Mobile Menu Links #}
+            <div class="space-y-2">
+                <a href="/products" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Products</a>
+                <a href="/categories" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Categories</a>
+                <a href="/brands" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Brands</a>
+                {% if navigation and navigation.items %}
+                {% for item in navigation.items %}
+                    <a href="{{ item.action.page.url | default('#') }}" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">
+                        {{ item.display }}
+                    </a>
+                {% endfor %}
+                {% endif %}
+                <hr class="my-4 border-gray-200">
+                <a href="/account" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Account</a>
+                <a href="/wishlist" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Wishlist</a>
+                <a href="/cart" class="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors duration-200">Cart</a>
+            </div>
+        </div>
+    </div>
+    </div>
+</header>

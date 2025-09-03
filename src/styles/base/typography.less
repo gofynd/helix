@@ -1,0 +1,283 @@
+/**
+ * Typography Styles
+ * 
+ * Heading and text styles using mixins
+ */
+
+@import '../utils/variables.less';
+@import '../utils/mixins.less';
+
+// ============================================================================
+// Headings
+// ============================================================================
+
+h1, .h1 {
+  .heading-1();
+  margin-bottom: @spacing-6;
+}
+
+h2, .h2 {
+  .heading-2();
+  margin-bottom: @spacing-5;
+}
+
+h3, .h3 {
+  .heading-3();
+  margin-bottom: @spacing-4;
+}
+
+h4, .h4 {
+  .heading-4();
+  margin-bottom: @spacing-4;
+}
+
+h5, .h5 {
+  .heading-5();
+  margin-bottom: @spacing-3;
+}
+
+h6, .h6 {
+  .heading-6();
+  margin-bottom: @spacing-3;
+}
+
+// ============================================================================
+// Body Text
+// ============================================================================
+
+p {
+  .body-base();
+  margin-bottom: @spacing-4;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.text-large {
+  .body-large();
+}
+
+.text-small {
+  .body-small();
+}
+
+.text-xs {
+  .caption();
+}
+
+// ============================================================================
+// Text Colors
+// ============================================================================
+
+.text-primary {
+  color: @text-primary;
+}
+
+.text-secondary {
+  color: @text-secondary;
+}
+
+.text-muted {
+  color: @text-muted;
+}
+
+.text-disabled {
+  color: @text-disabled;
+}
+
+.text-success {
+  color: @success-color;
+}
+
+.text-danger {
+  color: @danger-color;
+}
+
+.text-warning {
+  color: @warning-color;
+}
+
+.text-info {
+  color: @info-color;
+}
+
+.text-white {
+  color: @white;
+}
+
+// ============================================================================
+// Font Weights
+// ============================================================================
+
+.font-light {
+  font-weight: @font-weight-light;
+}
+
+.font-normal {
+  font-weight: @font-weight-normal;
+}
+
+.font-medium {
+  font-weight: @font-weight-medium;
+}
+
+.font-semibold {
+  font-weight: @font-weight-semibold;
+}
+
+.font-bold {
+  font-weight: @font-weight-bold;
+}
+
+// ============================================================================
+// Text Alignment
+// ============================================================================
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+// ============================================================================
+// Text Utilities
+// ============================================================================
+
+.text-truncate {
+  .text-truncate();
+}
+
+.text-truncate-2 {
+  .text-truncate-lines(2);
+}
+
+.text-truncate-3 {
+  .text-truncate-lines(3);
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-lowercase {
+  text-transform: lowercase;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.text-underline {
+  text-decoration: underline;
+}
+
+.text-no-underline {
+  text-decoration: none;
+}
+
+// ============================================================================
+// Links
+// ============================================================================
+
+a {
+  color: @primary-color;
+  text-decoration: none;
+  .transition-colors();
+  
+  &:hover {
+    color: @primary-dark;
+    text-decoration: underline;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid @primary-color;
+    outline-offset: 2px;
+    .rounded(@border-radius-sm);
+  }
+}
+
+.link {
+  color: @primary-color;
+  text-decoration: none;
+  .transition-colors();
+  
+  &:hover {
+    color: @primary-dark;
+    text-decoration: underline;
+  }
+}
+
+.link-muted {
+  color: @text-muted;
+  text-decoration: none;
+  .transition-colors();
+  
+  &:hover {
+    color: @text-primary;
+  }
+}
+
+// ============================================================================
+// Lists
+// ============================================================================
+
+.list {
+  margin-bottom: @spacing-4;
+  
+  li {
+    margin-bottom: @spacing-2;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.list-disc {
+  .list();
+  padding-left: @spacing-5;
+  
+  li {
+    list-style-type: disc;
+  }
+}
+
+.list-decimal {
+  .list();
+  padding-left: @spacing-5;
+  
+  li {
+    list-style-type: decimal;
+  }
+}
+
+// ============================================================================
+// Responsive Typography
+// ============================================================================
+
+.media-sm({
+  h1, .h1 {
+    .font-size(@font-size-5xl, @line-height-tight);
+  }
+  
+  h2, .h2 {
+    .font-size(@font-size-4xl, @line-height-tight);
+  }
+});
+
+.media-lg({
+  .text-large {
+    .font-size(@font-size-xl, @line-height-relaxed);
+  }
+});

@@ -1,0 +1,259 @@
+{% extends "layouts/base.njk" %}
+
+{% block bodyClass %}pdp-page{% endblock %}
+
+{% block content %}
+<div class="pdp">
+    <div class="pdp__container">
+        {% if product %}
+        <div class="pdp__content">
+            {# Product Gallery #}
+            <div class="pdp__gallery">
+                <div class="product-gallery">
+                    {% if product.media and product.media.length > 0 %}
+                    <div class="product-gallery__main">
+                        <img 
+                            src="{{ product.media[0].url }}"
+                            alt="{{ product.media[0].alt | default(product.name) }}"
+                            class="product-gallery__main-image"
+                            loading="eager"
+                        >
+                    </div>
+                    {% if product.media.length > 1 %}
+                    <div class="product-gallery__thumbnails">
+                        {% for image in product.media %}
+                        <button class="product-gallery__thumbnail {{ 'product-gallery__thumbnail--active' if loop.first }}"
+                                data-image-url="{{ image.url }}">
+                            <img src="{{ image.url }}" alt="{{ image.alt | default(product.name) }}">
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="product-gallery__main">
+                        <div class="product-card__placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21,15 16,10 5,21"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Product Details #}
+            <div class="pdp__details">
+                <div class="product-details">
+                    {% if product.brand %}
+                    <div class="product-details__brand">{{ product.brand.name }}</div>
+                    {% endif %}
+                    
+                    <h1 class="product-details__title">{{ product.name }}</h1>
+                    
+                    {% if product.rating %}
+                    <div class="product-details__rating">
+                        <div class="rating">
+                            {% for i in range(5) %}
+                            <span class="rating__star {{ 'rating__star--filled' if i < product.rating }}">★</span>
+                            {% endfor %}
+                        </div>
+                        {% if product.rating_count %}
+                        <span class="product-details__rating-count">({{ product.rating_count }} reviews)</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if product.price %}
+                    <div class="product-details__price">
+                        <span class="product-details__price-current">
+                            ₹{{ product.price.effective.min | number_format }}
+                        </span>
+                        {% if product.price.marked.min > product.price.effective.min %}
+                        <span class="product-details__price-original">
+                            ₹{{ product.price.marked.min | number_format }}
+                        </span>
+                        {% set discount = ((product.price.marked.min - product.price.effective.min) / product.price.marked.min * 100) | round %}
+                        {% if discount > 0 %}
+                        <span class="product-details__discount">{{ discount }}% OFF</span>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% elif product.attributes.min_price_effective %}
+                    <div class="product-details__price">
+                        <span class="product-details__price-current">
+                            ₹{{ product.attributes.min_price_effective | number_format }}
+                        </span>
+                        {% if product.attributes.min_price_marked and product.attributes.min_price_marked > product.attributes.min_price_effective %}
+                        <span class="product-details__price-original">
+                            ₹{{ product.attributes.min_price_marked | number_format }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if product.sellable %}
+                    <div class="inventory-status">
+                        <div class="inventory-status__indicator inventory-status__indicator--in-stock"></div>
+                        <span class="inventory-status__text inventory-status__text--in-stock">In Stock</span>
+                    </div>
+                    {% else %}
+                    <div class="inventory-status">
+                        <div class="inventory-status__indicator inventory-status__indicator--out-of-stock"></div>
+                        <span class="inventory-status__text inventory-status__text--out-of-stock">Out of Stock</span>
+                    </div>
+                    {% endif %}
+
+                    {% if product.short_description %}
+                    <div class="product-details__description">
+                        <p>{{ product.short_description }}</p>
+                    </div>
+                    {% endif %}
+
+                    {# Variants Section #}
+                    {% if product.has_variant and product.variants and product.variants.length > 0 %}
+                    <div class="product-variants">
+                        <div class="product-variants__group">
+                            <div class="product-variants__label">Available Options:</div>
+                            <div class="product-variants__options">
+                                {% for variant in product.variants %}
+                                <div class="product-variants__option {{ 'product-variants__option--selected' if loop.first }}">
+                                    {{ variant.name }}
+                                    {% if variant.price %}
+                                    <small>(₹{{ variant.price.effective.min }})</small>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Product Actions #}
+                    <div class="product-actions">
+                        <div class="product-actions__quantity">
+                            <span class="product-actions__quantity-label">Quantity:</span>
+                            <div class="product-actions__quantity-selector">
+                                <button class="product-actions__quantity-btn" type="button" data-action="decrease">−</button>
+                                <input class="product-actions__quantity-input" type="number" value="1" min="1" max="10">
+                                <button class="product-actions__quantity-btn" type="button" data-action="increase">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions__buttons">
+                            <button class="product-actions__add-to-cart btn-add-to-cart"
+                                    data-product-id="{{ product.uid }}"
+                                    {% if not product.sellable %}disabled{% endif %}>
+                                {% if product.sellable %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                                    <circle cx="9" cy="21" r="1"></circle>
+                                    <circle cx="20" cy="21" r="1"></circle>
+                                    <path d="m1 1 4 4 16 0 1 13-17 0"></path>
+                                </svg>
+                                Add to Cart
+                                {% else %}
+                                Out of Stock
+                                {% endif %}
+                            </button>
+                            
+                            <button class="product-actions__wishlist product-card__wishlist"
+                                    data-product-id="{{ product.uid }}"
+                                    aria-label="Add to wishlist">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="m20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {# Key Features/Highlights #}
+                    {% if product.highlights and product.highlights.length > 0 %}
+                    <div class="product-info">
+                        <div class="product-info__attribute-group">
+                            <h3 class="product-info__attribute-title">Key Features</h3>
+                            <ul class="list-disc">
+                                {% for highlight in product.highlights %}
+                                <li>{{ highlight }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Product Attributes #}
+                    {% if product.attributes %}
+                    <div class="product-info">
+                        <div class="product-info__attribute-group">
+                            <h3 class="product-info__attribute-title">Product Details</h3>
+                            <div class="product-info__attribute-list">
+                                {% for key, value in product.attributes %}
+                                <div class="product-info__attribute-item">
+                                    <span class="product-info__attribute-key">{{ key | title }}:</span>
+                                    <span class="product-info__attribute-value">{{ value }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Product Information Tabs #}
+        {% if product.description %}
+        <div class="product-info">
+            <div class="product-info__tabs">
+                <button class="product-info__tab product-info__tab--active" data-tab="description">Description</button>
+                {% if product.attributes %}
+                <button class="product-info__tab" data-tab="specifications">Specifications</button>
+                {% endif %}
+                <button class="product-info__tab" data-tab="reviews">Reviews</button>
+            </div>
+            
+            <div class="product-info__content" id="tab-description">
+                <div class="product-description">
+                    {{ product.description | safe }}
+                </div>
+            </div>
+            
+            {% if product.attributes %}
+            <div class="product-info__content" id="tab-specifications" style="display: none;">
+                <div class="product-info__attributes">
+                    {% for key, value in product.attributes %}
+                    <div class="product-info__attribute-item">
+                        <span class="product-info__attribute-key">{{ key | title }}:</span>
+                        <span class="product-info__attribute-value">{{ value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="product-info__content" id="tab-reviews" style="display: none;">
+                <div class="text-center">
+                    <p class="text-muted">Customer reviews will be displayed here.</p>
+                    {% if product.rating_count %}
+                    <p>Based on {{ product.rating_count }} customer reviews.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {# Related Products #}
+        {% if relatedProducts and relatedProducts.length > 0 %}
+        <section class="related-products">
+            <h2 class="related-products__title">You May Also Like</h2>
+            <div class="related-products__grid">
+                {% for product in relatedProducts %}
+                {% include "partials/product-card.njk" %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{# Footer #}
+<footer class="footer" role="contentinfo">
+    <div class="footer__container">
+        {# Main Footer Content #}
+        <div class="footer__main">
+            <div class="footer__grid">
+                {# Company Info #}
+                <div class="footer__section">
+                    <div class="footer__logo">
+                        <img src="/static/images/logo.svg" alt="Fynd Storefront" class="footer__logo-image">
+                    </div>
+                    <p class="footer__description">
+                        Your one-stop destination for the latest trends and best deals. 
+                        Shop with confidence and enjoy fast delivery.
+                    </p>
+                    <div class="footer__social">
+                        <a href="#" class="footer__social-link" aria-label="Facebook">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="footer__social-link" aria-label="Twitter">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="footer__social-link" aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987 6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348zm7.718 0c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                {# Quick Links #}
+                <div class="footer__section">
+                    <h3 class="footer__title">Quick Links</h3>
+                    <ul class="footer__links">
+                        <li><a href="/" class="footer__link">Home</a></li>
+                        <li><a href="/products" class="footer__link">All Products</a></li>
+                        <li><a href="/categories" class="footer__link">Categories</a></li>
+                        <li><a href="/brands" class="footer__link">Brands</a></li>
+                        <li><a href="/sale" class="footer__link">Sale</a></li>
+                    </ul>
+                </div>
+                
+                {# Customer Service #}
+                <div class="footer__section">
+                    <h3 class="footer__title">Customer Service</h3>
+                    <ul class="footer__links">
+                        <li><a href="/contact" class="footer__link">Contact Us</a></li>
+                        <li><a href="/help" class="footer__link">Help Center</a></li>
+                        <li><a href="/shipping" class="footer__link">Shipping Info</a></li>
+                        <li><a href="/returns" class="footer__link">Returns</a></li>
+                        <li><a href="/track-order" class="footer__link">Track Order</a></li>
+                    </ul>
+                </div>
+                
+                {# About #}
+                <div class="footer__section">
+                    <h3 class="footer__title">About</h3>
+                    <ul class="footer__links">
+                        <li><a href="/about" class="footer__link">About Us</a></li>
+                        <li><a href="/careers" class="footer__link">Careers</a></li>
+                        <li><a href="/press" class="footer__link">Press</a></li>
+                        <li><a href="/sustainability" class="footer__link">Sustainability</a></li>
+                        <li><a href="/affiliate" class="footer__link">Affiliate Program</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        {# Newsletter Signup #}
+        <div class="footer__newsletter">
+            <div class="newsletter">
+                <h3 class="newsletter__title">Stay Updated</h3>
+                <p class="newsletter__description">
+                    Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
+                </p>
+                <form class="newsletter__form" action="/newsletter/subscribe" method="POST">
+                    <div class="newsletter__group">
+                        <label for="newsletter-email" class="sr-only">Email address</label>
+                        <input 
+                            type="email" 
+                            id="newsletter-email"
+                            name="email" 
+                            class="newsletter__input" 
+                            placeholder="Enter your email"
+                            required
+                            aria-describedby="newsletter-help"
+                        >
+                        <button type="submit" class="newsletter__button">
+                            Subscribe
+                        </button>
+                    </div>
+                    <div id="newsletter-help" class="newsletter__help">
+                        We respect your privacy. Unsubscribe at any time.
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {# Footer Bottom #}
+        <div class="footer__bottom">
+            <div class="footer__bottom-content">
+                <div class="footer__legal">
+                    <ul class="footer__legal-links">
+                        <li><a href="/privacy" class="footer__legal-link">Privacy Policy</a></li>
+                        <li><a href="/terms" class="footer__legal-link">Terms of Service</a></li>
+                        <li><a href="/cookies" class="footer__legal-link">Cookie Policy</a></li>
+                        <li><a href="/accessibility" class="footer__legal-link">Accessibility</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer__payment">
+                    <span class="footer__payment-text">We Accept:</span>
+                    <div class="footer__payment-icons">
+                        <img src="/static/images/payment/visa.svg" alt="Visa" class="footer__payment-icon">
+                        <img src="/static/images/payment/mastercard.svg" alt="Mastercard" class="footer__payment-icon">
+                        <img src="/static/images/payment/amex.svg" alt="American Express" class="footer__payment-icon">
+                        <img src="/static/images/payment/paypal.svg" alt="PayPal" class="footer__payment-icon">
+                    </div>
+                </div>
+                
+                <div class="footer__copyright">
+                    <p>&copy; {{ "now" | date("Y") }} Fynd Storefront. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

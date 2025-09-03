@@ -1,0 +1,352 @@
+{% extends "layouts/base.njk" %}
+
+{% block bodyClass %}plp-page{% endblock %}
+
+{% block content %}
+<div class="plp">
+    {# Page Header #}
+    <div class="plp__header">
+        <div class="container">
+            <div class="plp__title-section">
+                {% if searchQuery %}
+                <h1 class="plp__title">Search Results for "{{ searchQuery }}"</h1>
+                <p class="plp__subtitle">{{ pagination.item_total | default(0) }} products found</p>
+                {% else %}
+                <h1 class="plp__title">All Products</h1>
+                <p class="plp__subtitle">{{ pagination.item_total | default(0) }} products</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="plp__content">
+            {# Filters Sidebar #}
+            {% if filters and filters.length > 0 %}
+            <aside class="plp__filters" aria-label="Product filters">
+                <div class="filters">
+                    <div class="filters__header">
+                        <h2 class="filters__title">Filters</h2>
+                        {% if currentFilters and Object.keys(currentFilters).length > 0 %}
+                        <button class="filters__clear" onclick="clearAllFilters()">
+                            Clear All
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    {# Active Filters #}
+                    {% if currentFilters and Object.keys(currentFilters).length > 0 %}
+                    <div class="filters__active">
+                        <h3 class="filters__active-title">Active Filters:</h3>
+                        <div class="filters__active-list">
+                            {% for key, value in currentFilters %}
+                            <span class="filter-tag">
+                                {{ key }}: {{ value }}
+                                <button class="filter-tag__remove" onclick="removeFilter('{{ key }}', '{{ value }}')">×</button>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {# Filter Groups #}
+                    {% for filter in filters %}
+                    <div class="filter-group">
+                        <h3 class="filter-group__title">{{ filter.key | title }}</h3>
+                        <div class="filter-group__options">
+                            {% for value in filter.values %}
+                            <label class="filter-option">
+                                <input 
+                                    type="checkbox" 
+                                    class="filter-option__input"
+                                    name="{{ filter.key }}"
+                                    value="{{ value.value }}"
+                                    {% if value.is_selected %}checked{% endif %}
+                                    onchange="applyFilter('{{ filter.key }}', '{{ value.value }}', this.checked)"
+                                >
+                                <span class="filter-option__label">
+                                    {{ value.display }}
+                                    {% if value.count %}
+                                    <span class="filter-option__count">({{ value.count }})</span>
+                                    {% endif %}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+            {% endif %}
+            
+            {# Main Content #}
+            <main class="plp__main">
+                {# Toolbar #}
+                <div class="plp__toolbar">
+                    <div class="plp__results-info">
+                        Showing 
+                        {{ ((pagination.current - 1) * pagination.size + 1) if products.length > 0 else 0 }}
+                        - 
+                        {{ (pagination.current - 1) * pagination.size + products.length }}
+                        of {{ pagination.item_total }} products
+                    </div>
+                    
+                    {# Sort Options #}
+                    {% if sortOptions and sortOptions.length > 0 %}
+                    <div class="plp__sort">
+                        <label for="sort-select" class="plp__sort-label">Sort by:</label>
+                        <select id="sort-select" class="plp__sort-select" onchange="applySort(this.value)">
+                            {% for sort in sortOptions %}
+                            <option 
+                                value="{{ sort.value }}"
+                                {% if sort.is_selected %}selected{% endif %}
+                            >
+                                {{ sort.display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {# View Toggle #}
+                    <div class="plp__view-toggle">
+                        <button 
+                            class="plp__view-btn plp__view-btn--grid plp__view-btn--active" 
+                            onclick="setView('grid')"
+                            aria-label="Grid view"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                        <button 
+                            class="plp__view-btn plp__view-btn--list" 
+                            onclick="setView('list')"
+                            aria-label="List view"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                {# Products Grid #}
+                {% if products and products.length > 0 %}
+                <div class="plp__products">
+                    <div class="products-grid" id="products-grid">
+                        {% for product in products %}
+                        {% include "partials/product-card.njk" %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {# Pagination #}
+                {% if pagination.item_total > pagination.size %}
+                <nav class="plp__pagination" aria-label="Product pages">
+                    <div class="pagination">
+                        {% if pagination.has_previous %}
+                        <a href="?{{ buildPaginationUrl(pagination.current - 1) }}" class="pagination__link pagination__link--prev">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                            </svg>
+                            Previous
+                        </a>
+                        {% endif %}
+                        
+                        <div class="pagination__pages">
+                            {% set startPage = max(1, pagination.current - 2) %}
+                            {% set endPage = min(pagination.current + 2, ceil(pagination.item_total / pagination.size)) %}
+                            
+                            {% if startPage > 1 %}
+                            <a href="?{{ buildPaginationUrl(1) }}" class="pagination__link">1</a>
+                            {% if startPage > 2 %}
+                            <span class="pagination__ellipsis">...</span>
+                            {% endif %}
+                            {% endif %}
+                            
+                            {% for page in range(startPage, endPage + 1) %}
+                            {% if page === pagination.current %}
+                            <span class="pagination__link pagination__link--current" aria-current="page">{{ page }}</span>
+                            {% else %}
+                            <a href="?{{ buildPaginationUrl(page) }}" class="pagination__link">{{ page }}</a>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if endPage < ceil(pagination.item_total / pagination.size) %}
+                            {% if endPage < ceil(pagination.item_total / pagination.size) - 1 %}
+                            <span class="pagination__ellipsis">...</span>
+                            {% endif %}
+                            <a href="?{{ buildPaginationUrl(ceil(pagination.item_total / pagination.size)) }}" class="pagination__link">{{ ceil(pagination.item_total / pagination.size) }}</a>
+                            {% endif %}
+                        </div>
+                        
+                        {% if pagination.has_next %}
+                        <a href="?{{ buildPaginationUrl(pagination.current + 1) }}" class="pagination__link pagination__link--next">
+                            Next
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                {# No Products Found #}
+                <div class="plp__empty">
+                    <div class="empty-state">
+                        <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <h2 class="empty-state__title">
+                            {% if searchQuery %}
+                            No products found for "{{ searchQuery }}"
+                            {% else %}
+                            No products found
+                            {% endif %}
+                        </h2>
+                        <p class="empty-state__description">
+                            Try adjusting your search or filters to find what you're looking for.
+                        </p>
+                        <div class="empty-state__actions">
+                            {% if searchQuery %}
+                            <a href="/products" class="btn btn--primary">Browse All Products</a>
+                            {% endif %}
+                            <button onclick="clearAllFilters()" class="btn btn--secondary">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// PLP specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize filters
+    initializeFilters();
+    
+    // Initialize infinite scroll if enabled
+    // initializeInfiniteScroll();
+});
+
+function applyFilter(key, value, checked) {
+    const url = new URL(window.location);
+    const params = new URLSearchParams(url.search);
+    
+    // Get current filters
+    const currentFilters = params.get('f') || '';
+    const filterPairs = currentFilters.split('::').filter(Boolean);
+    
+    const filterKey = `${key}:${value}`;
+    
+    if (checked) {
+        // Add filter
+        filterPairs.push(filterKey);
+    } else {
+        // Remove filter
+        const index = filterPairs.indexOf(filterKey);
+        if (index > -1) {
+            filterPairs.splice(index, 1);
+        }
+    }
+    
+    // Update URL
+    if (filterPairs.length > 0) {
+        params.set('f', filterPairs.join('::'));
+    } else {
+        params.delete('f');
+    }
+    
+    params.delete('page'); // Reset to first page
+    
+    window.location.href = `${url.pathname}?${params.toString()}`;
+}
+
+function removeFilter(key, value) {
+    const url = new URL(window.location);
+    const params = new URLSearchParams(url.search);
+    
+    const currentFilters = params.get('f') || '';
+    const filterPairs = currentFilters.split('::').filter(Boolean);
+    
+    const filterKey = `${key}:${value}`;
+    const index = filterPairs.indexOf(filterKey);
+    
+    if (index > -1) {
+        filterPairs.splice(index, 1);
+    }
+    
+    if (filterPairs.length > 0) {
+        params.set('f', filterPairs.join('::'));
+    } else {
+        params.delete('f');
+    }
+    
+    params.delete('page');
+    
+    window.location.href = `${url.pathname}?${params.toString()}`;
+}
+
+function clearAllFilters() {
+    const url = new URL(window.location);
+    const params = new URLSearchParams(url.search);
+    
+    params.delete('f');
+    params.delete('page');
+    
+    window.location.href = `${url.pathname}?${params.toString()}`;
+}
+
+function applySort(sortValue) {
+    const url = new URL(window.location);
+    const params = new URLSearchParams(url.search);
+    
+    params.set('sort_on', sortValue);
+    params.delete('page');
+    
+    window.location.href = `${url.pathname}?${params.toString()}`;
+}
+
+function setView(viewType) {
+    const grid = document.getElementById('products-grid');
+    const buttons = document.querySelectorAll('.plp__view-btn');
+    
+    // Update grid class
+    grid.className = `products-grid products-grid--${viewType}`;
+    
+    // Update button states
+    buttons.forEach(btn => {
+        btn.classList.remove('plp__view-btn--active');
+    });
+    
+    document.querySelector(`.plp__view-btn--${viewType}`).classList.add('plp__view-btn--active');
+    
+    // Save preference
+    localStorage.setItem('plp-view', viewType);
+}
+
+function initializeFilters() {
+    // Restore view preference
+    const savedView = localStorage.getItem('plp-view');
+    if (savedView && ['grid', 'list'].includes(savedView)) {
+        setView(savedView);
+    }
+}
+</script>
+{% endblock %}

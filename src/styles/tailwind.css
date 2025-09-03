@@ -1,0 +1,77 @@
+/**
+ * Tailwind CSS Entry Point
+ * 
+ * This file imports Tailwind's base, components, and utilities
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Custom Components (without @apply for initial build)
+ */
+@layer components {
+  /* Basic button styles */
+  .btn-tw {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    outline: none;
+  }
+  
+  .btn-tw:focus {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  }
+  
+  .btn-tw-primary {
+    background-color: rgb(37, 99, 235);
+    color: white;
+  }
+  
+  .btn-tw-primary:hover {
+    background-color: rgb(29, 78, 216);
+  }
+  
+  /* Card components */
+  .card-tw {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(229, 231, 235);
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  
+  .card-tw:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/**
+ * Custom Utilities
+ */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

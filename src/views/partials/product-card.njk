@@ -1,0 +1,122 @@
+{# Product card component #}
+<article class="product-card-tw" data-product-id="{{ product.uid }}">
+    <a href="/product/{{ product.slug }}" class="block h-full">
+        {# Product Image #}
+        <div class="product-card-tw-image relative">
+            {% if product.media and product.media.length > 0 %}
+            <img 
+                src="{{ product.media[0].url }}"
+                alt="{{ product.media[0].alt | default(product.name) }}"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+            >
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                <svg class="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21,15 16,10 5,21"></polyline>
+                </svg>
+            </div>
+            {% endif %}
+            
+            {# Sale Badge #}
+            {% if product.price and product.price.marked and product.price.effective %}
+            {% set discount = ((product.price.marked.max - product.price.effective.max) / product.price.marked.max * 100) | round %}
+            {% if discount > 0 %}
+            <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold z-10">
+                {{ discount }}% OFF
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            {# Out of Stock Badge #}
+            {% if not product.sellable %}
+            <div class="absolute top-2 left-2 bg-gray-500 text-white px-2 py-1 rounded-lg text-xs font-bold z-10">
+                Out of Stock
+            </div>
+            {% endif %}
+        </div>
+        
+        {# Product Info #}
+        <div class="product-card-tw-content">
+            {# Brand #}
+            {% if product.brand %}
+            <div class="text-xs text-gray-500 uppercase tracking-wide font-medium">{{ product.brand.name }}</div>
+            {% endif %}
+            
+            {# Product Name #}
+            <h3 class="product-card-tw-title">{{ product.name | truncate(60) }}</h3>
+            
+            {# Rating #}
+            {% if product.rating and product.rating > 0 %}
+            <div class="flex items-center space-x-2">
+                <div class="flex text-yellow-400" role="img" aria-label="Rating: {{ product.rating }} out of 5 stars">
+                    {% for i in range(1, 6) %}
+                    <span class="{{ '★' if i <= product.rating else '☆' }}">{{ '★' if i <= product.rating else '☆' }}</span>
+                    {% endfor %}
+                </div>
+                {% if product.rating_count %}
+                <span class="text-xs text-gray-500">({{ product.rating_count }})</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {# Price #}
+            {% if product.price %}
+            <div class="space-y-1">
+                {% if product.price.effective %}
+                <span class="product-card-tw-price">
+                    ₹{{ product.price.effective.min | number_format }}
+                    {% if product.price.effective.min !== product.price.effective.max %}
+                    - ₹{{ product.price.effective.max | number_format }}
+                    {% endif %}
+                </span>
+                {% endif %}
+                
+                {% if product.price.marked and product.price.marked.max > product.price.effective.max %}
+                <span class="text-sm text-gray-500 line-through">
+                    ₹{{ product.price.marked.min | number_format }}
+                    {% if product.price.marked.min !== product.price.marked.max %}
+                    - ₹{{ product.price.marked.max | number_format }}
+                    {% endif %}
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {# Variants indicator #}
+            {% if product.has_variant and product.variants %}
+            <div class="text-xs text-gray-500">
+                {{ product.variants.length }} variant{{ 's' if product.variants.length !== 1 else '' }}
+            </div>
+            {% endif %}
+        </div>
+    </a>
+    
+    {# Quick Actions #}
+    <div class="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {# Wishlist Button #}
+        <button 
+            class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-red-50 transition-all duration-200" 
+            aria-label="Add {{ product.name }} to wishlist"
+            data-product-id="{{ product.uid }}"
+        >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        </button>
+        
+        {# Quick View Button #}
+        <button 
+            class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-primary-500 hover:bg-primary-50 transition-all duration-200" 
+            aria-label="Quick view {{ product.name }}"
+            data-product-id="{{ product.uid }}"
+        >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+    </div>
+</article>
