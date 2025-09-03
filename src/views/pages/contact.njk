@@ -1,0 +1,514 @@
+{% extends "layouts/base.njk" %}
+
+{% block seo %}
+    <title>{{ seo.title | default('Contact Us - Fynd Store') }}</title>
+    <meta name="description" content="{{ seo.description | default('Get in touch with Fynd Store') }}">
+    <meta name="keywords" content="{{ seo.keywords | default('contact, support, help') }}">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="{{ seo.ogTitle | default(seo.title) | default('Contact Us') }}">
+    <meta property="og:description" content="{{ seo.ogDescription | default(seo.description) | default('Get in touch with us') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ seo.canonicalUrl | default('/contact') }}">
+    {% if seo.ogImage %}
+    <meta property="og:image" content="{{ seo.ogImage }}">
+    {% endif %}
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ seo.canonicalUrl | default('/contact') }}">
+{% endblock %}
+
+{% block styles %}
+<style>
+    .contact-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+    }
+    
+    .contact-hero__title {
+        font-size: 48px;
+        margin-bottom: 16px;
+        font-weight: 700;
+    }
+    
+    .contact-hero__subtitle {
+        font-size: 20px;
+        opacity: 0.95;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .contact-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 20px;
+    }
+    
+    .contact-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        margin-bottom: 60px;
+    }
+    
+    @media (max-width: 768px) {
+        .contact-content {
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+    }
+    
+    .contact-info {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .contact-info__title {
+        font-size: 28px;
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .contact-info__item {
+        margin-bottom: 30px;
+    }
+    
+    .contact-info__label {
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .contact-info__value {
+        color: #333;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    .contact-info__value a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .contact-info__value a:hover {
+        text-decoration: underline;
+    }
+    
+    .business-hours {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .business-hours__title {
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #333;
+    }
+    
+    .business-hours__item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .business-hours__item:last-child {
+        border-bottom: none;
+    }
+    
+    .social-links {
+        display: flex;
+        gap: 16px;
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .social-links__item {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #667eea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+    
+    .social-links__item:hover {
+        transform: scale(1.1);
+        background: #764ba2;
+    }
+    
+    .contact-form {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .contact-form__title {
+        font-size: 28px;
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .form-group--required label::after {
+        content: " *";
+        color: #e53e3e;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 14px 32px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .form-message {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .form-message--success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .form-message--error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .map-container {
+        width: 100%;
+        height: 400px;
+        background: #f0f0f0;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 60px;
+        position: relative;
+    }
+    
+    .map-placeholder {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="contact-hero">
+    <h1 class="contact-hero__title">Get in Touch</h1>
+    <p class="contact-hero__subtitle">
+        We're here to help and answer any question you might have. We look forward to hearing from you!
+    </p>
+</section>
+
+<!-- Contact Content -->
+<div class="contact-container">
+    <div class="contact-content">
+        <!-- Contact Information -->
+        <div class="contact-info">
+            <h2 class="contact-info__title">Contact Information</h2>
+            
+            <div class="contact-info__item">
+                <div class="contact-info__label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Email
+                </div>
+                <div class="contact-info__value">
+                    <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                </div>
+            </div>
+            
+            <div class="contact-info__item">
+                <div class="contact-info__label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                    </svg>
+                    Phone
+                </div>
+                <div class="contact-info__value">
+                    <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
+                </div>
+            </div>
+            
+            <div class="contact-info__item">
+                <div class="contact-info__label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Address
+                </div>
+                <div class="contact-info__value">
+                    {{ contact.address.line1 }}<br>
+                    {% if contact.address.line2 %}
+                    {{ contact.address.line2 }}<br>
+                    {% endif %}
+                    {{ contact.address.city }}, {{ contact.address.state }}<br>
+                    {{ contact.address.country }} - {{ contact.address.pincode }}
+                </div>
+            </div>
+            
+            <!-- Business Hours -->
+            <div class="business-hours">
+                <h3 class="business-hours__title">Business Hours</h3>
+                <div class="business-hours__item">
+                    <span>Monday - Friday</span>
+                    <span>{{ contact.businessHours.weekdays }}</span>
+                </div>
+                <div class="business-hours__item">
+                    <span>Saturday</span>
+                    <span>{{ contact.businessHours.saturday }}</span>
+                </div>
+                <div class="business-hours__item">
+                    <span>Sunday</span>
+                    <span>{{ contact.businessHours.sunday }}</span>
+                </div>
+            </div>
+            
+            <!-- Social Media Links -->
+            <div class="social-links">
+                {% if contact.socialMedia.facebook %}
+                <a href="{{ contact.socialMedia.facebook }}" target="_blank" rel="noopener" class="social-links__item" aria-label="Facebook">
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if contact.socialMedia.twitter %}
+                <a href="{{ contact.socialMedia.twitter }}" target="_blank" rel="noopener" class="social-links__item" aria-label="Twitter">
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if contact.socialMedia.instagram %}
+                <a href="{{ contact.socialMedia.instagram }}" target="_blank" rel="noopener" class="social-links__item" aria-label="Instagram">
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if contact.socialMedia.linkedin %}
+                <a href="{{ contact.socialMedia.linkedin }}" target="_blank" rel="noopener" class="social-links__item" aria-label="LinkedIn">
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Contact Form -->
+        <div class="contact-form">
+            <h2 class="contact-form__title">Send us a Message</h2>
+            
+            <div class="form-message form-message--success" id="successMessage">
+                Your message has been sent successfully! We'll get back to you soon.
+            </div>
+            
+            <div class="form-message form-message--error" id="errorMessage">
+                Something went wrong. Please try again later.
+            </div>
+            
+            <form id="contactForm">
+                <div class="form-group form-group--required">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group form-group--required">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                
+                <div class="form-group form-group--required">
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="order">Order Related</option>
+                        <option value="product">Product Information</option>
+                        <option value="shipping">Shipping & Delivery</option>
+                        <option value="returns">Returns & Refunds</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group form-group--required">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" required placeholder="Tell us how we can help you..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="submitBtn">Send Message</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Map Section -->
+    <div class="map-container">
+        <div class="map-placeholder">
+            <svg width="80" height="80" fill="#999" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <p>Interactive Map Coming Soon</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Hide any existing messages
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        
+        // Collect form data
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        
+        try {
+            // Send form data to server
+            const response = await fetch('/contact/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                successMessage.style.display = 'block';
+                form.reset();
+                
+                // Scroll to top of form
+                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                // Show error message
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = result.message || 'Something went wrong. Please try again.';
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = 'Network error. Please check your connection and try again.';
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+        }
+    });
+    
+    // Form validation enhancements
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.required && !this.value) {
+                this.style.borderColor = '#e53e3e';
+            } else {
+                this.style.borderColor = '#ddd';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

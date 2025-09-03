@@ -1,0 +1,314 @@
+// Contact page styles
+@import './utils/variables.less';
+@import './utils/mixins.less';
+
+// Contact page specific styles
+.contact-page {
+    background: @color-white;
+    min-height: 100vh;
+}
+
+// Hero section
+.contact-hero {
+    background: linear-gradient(135deg, @color-primary 0%, darken(@color-primary, 10%) 100%);
+    color: @color-white;
+    padding: 80px 0;
+    text-align: center;
+
+    &__title {
+        font-size: 48px;
+        margin-bottom: @spacing-md;
+        font-weight: 700;
+
+        @media @mobile {
+            font-size: 36px;
+        }
+    }
+
+    &__subtitle {
+        font-size: 20px;
+        opacity: 0.95;
+        max-width: 600px;
+        margin: 0 auto;
+
+        @media @mobile {
+            font-size: 18px;
+        }
+    }
+}
+
+// Contact container
+.contact-container {
+    .container();
+    padding: @spacing-xl @spacing-md;
+}
+
+// Contact content grid
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: @spacing-xl;
+    margin-bottom: @spacing-xl;
+
+    @media @tablet {
+        grid-template-columns: 1fr;
+        gap: @spacing-lg;
+    }
+}
+
+// Contact information card
+.contact-info {
+    background: @color-white;
+    border-radius: @border-radius-lg;
+    padding: @spacing-lg;
+    .card-shadow();
+
+    &__title {
+        font-size: 28px;
+        margin-bottom: @spacing-lg;
+        color: @color-text-primary;
+    }
+
+    &__item {
+        margin-bottom: @spacing-lg;
+    }
+
+    &__label {
+        font-weight: 600;
+        color: @color-text-secondary;
+        margin-bottom: @spacing-xs;
+        display: flex;
+        align-items: center;
+        gap: @spacing-xs;
+
+        svg {
+            color: @color-primary;
+        }
+    }
+
+    &__value {
+        color: @color-text-primary;
+        font-size: 16px;
+        line-height: 1.6;
+
+        a {
+            color: @color-primary;
+            text-decoration: none;
+            .transition();
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// Business hours
+.business-hours {
+    background: @color-bg-light;
+    border-radius: @border-radius;
+    padding: @spacing-md;
+    margin-top: @spacing-lg;
+
+    &__title {
+        font-weight: 600;
+        margin-bottom: @spacing-md;
+        color: @color-text-primary;
+    }
+
+    &__item {
+        display: flex;
+        justify-content: space-between;
+        padding: @spacing-xs 0;
+        border-bottom: 1px solid @color-border;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+
+// Social links
+.social-links {
+    display: flex;
+    gap: @spacing-md;
+    margin-top: @spacing-lg;
+    padding-top: @spacing-lg;
+    border-top: 1px solid @color-border;
+
+    &__item {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: @color-primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        .transition();
+
+        &:hover {
+            transform: scale(1.1);
+            background: darken(@color-primary, 10%);
+        }
+    }
+}
+
+// Contact form
+.contact-form {
+    background: @color-white;
+    border-radius: @border-radius-lg;
+    padding: @spacing-lg;
+    .card-shadow();
+
+    &__title {
+        font-size: 28px;
+        margin-bottom: @spacing-lg;
+        color: @color-text-primary;
+    }
+}
+
+// Form groups
+.form-group {
+    margin-bottom: @spacing-md;
+
+    label {
+        display: block;
+        margin-bottom: @spacing-xs;
+        font-weight: 500;
+        color: @color-text-primary;
+    }
+
+    input,
+    textarea,
+    select {
+        width: 100%;
+        padding: @spacing-sm @spacing-md;
+        border: 1px solid @color-border;
+        border-radius: @border-radius;
+        font-size: 16px;
+        .transition();
+
+        &:focus {
+            outline: none;
+            border-color: @color-primary;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    &--required label::after {
+        content: " *";
+        color: @color-error;
+    }
+}
+
+// Submit button
+.btn-submit {
+    background: linear-gradient(135deg, @color-primary 0%, darken(@color-primary, 10%) 100%);
+    color: @color-white;
+    padding: @spacing-sm @spacing-lg;
+    border: none;
+    border-radius: @border-radius;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    .transition();
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// Form messages
+.form-message {
+    padding: @spacing-sm;
+    border-radius: @border-radius;
+    margin-bottom: @spacing-md;
+    display: none;
+
+    &--success {
+        background: @color-success-light;
+        color: @color-success;
+        border: 1px solid @color-success-border;
+    }
+
+    &--error {
+        background: @color-error-light;
+        color: @color-error;
+        border: 1px solid @color-error-border;
+    }
+}
+
+// Map container
+.map-container {
+    width: 100%;
+    height: 400px;
+    background: @color-bg-light;
+    border-radius: @border-radius-lg;
+    overflow: hidden;
+    margin-top: @spacing-xl;
+    position: relative;
+}
+
+.map-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: @color-text-secondary;
+
+    svg {
+        margin-bottom: @spacing-md;
+    }
+}
+
+// Breadcrumbs
+.breadcrumbs {
+    padding: @spacing-md 0;
+    background: @color-bg-light;
+
+    &__container {
+        .container();
+        padding: 0 @spacing-md;
+    }
+
+    &__list {
+        display: flex;
+        align-items: center;
+        gap: @spacing-xs;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    &__item {
+        color: @color-text-secondary;
+        font-size: 14px;
+    }
+
+    &__link {
+        color: @color-primary;
+        text-decoration: none;
+        .transition();
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__separator {
+        color: @color-text-muted;
+    }
+}

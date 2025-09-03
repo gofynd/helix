@@ -92,11 +92,16 @@ dist
 # Public directory - keep structure, ignore compiled files
 public/css/*.css
 public/css/*.css.map
-public/js/*.js
-public/js/*.js.map
-# But keep the directory structure
-!public/css/.gitkeep
+# Ignore generated JS files but keep source/static JS files
+public/js/**/dist/
+public/js/**/*.min.js
+public/js/**/*.bundle.js
+# Keep source JS files and static assets
+!public/js/main.js
 !public/js/.gitkeep
+# Keep all images and static assets
+!public/images/
+!public/images/**/*
 
 # Storybook build outputs
 .out

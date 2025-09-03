@@ -52,6 +52,10 @@ export const GET_PRODUCT = gql`
       brand {
         name
         uid
+        logo {
+          url
+          alt
+        }
       }
       media {
         ...MediaFragment
@@ -66,6 +70,65 @@ export const GET_PRODUCT = gql`
       sellable
       tags
       highlights
+      color
+      discount
+      sizes {
+        discount
+        multi_size
+        sellable
+        size_chart {
+          title
+          description
+          image
+          size_tip
+        }
+        size_details {
+          display
+          value
+          is_available
+          quantity
+          seller_identifiers
+        }
+        stores {
+          count
+        }
+        price {
+          effective {
+            currency_code
+            currency_symbol
+            max
+            min
+          }
+          marked {
+            currency_code
+            currency_symbol
+            max
+            min
+          }
+        }
+      }
+      price {
+        effective {
+          currency_code
+          currency_symbol
+          max
+          min
+        }
+        marked {
+          currency_code
+          currency_symbol
+          max
+          min
+        }
+      }
+      grouped_attributes {
+        title
+        details {
+          key
+          type
+          value
+        }
+      }
     }
   }
   ${MEDIA_FRAGMENT}
@@ -202,6 +265,240 @@ export const SEARCH_PRODUCTS = gql`
         action {
           type
         }
+      }
+    }
+  }
+`;
+
+/**
+ * Get product price by size - for dynamic pricing on PDP
+ * Fetches size-specific pricing information including discounts, delivery promise, etc.
+ */
+export const GET_PRODUCT_PRICE = gql`
+  query ProductPrice($slug: String!, $size: String!, $pincode: String!) {
+    productPrice(slug: $slug, size: $size, pincode: $pincode) {
+      article_id
+      discount
+      is_cod
+      is_gift
+      item_type
+      long_lat
+      pincode
+      quantity
+      seller_count
+      special_badge
+      price_per_piece {
+        currency_code
+        currency_symbol
+        effective
+        marked
+        selling
+      }
+      price {
+        currency_code
+        currency_symbol
+        effective
+        marked
+        selling
+      }
+      price_per_unit {
+        currency_code
+        currency_symbol
+        price
+        unit
+      }
+      return_config {
+        returnable
+        time
+        unit
+      }
+      seller {
+        count
+        name
+        uid
+      }
+      set {
+        quantity
+      }
+      store {
+        uid
+        name
+        count
+      }
+      strategy_wise_listing {
+        distance
+        pincode
+        quantity
+        tat
+      }
+      grouped_attributes {
+        title
+        details {
+          key
+          type
+          value
+        }
+      }
+      article_assignment {
+        level
+        strategy
+      }
+      delivery_promise {
+        max
+        min
+      }
+      discount_meta {
+        end
+        start
+        start_timer_in_minutes
+        timer
+      }
+    }
+  }
+`;
+
+/**
+ * Get application configuration - storefront common details
+ * Fetches app details, currencies, contact info, features, and other configurations
+ */
+export const GET_APPLICATION_CONFIGURATION = gql`
+  query applicationConfiguration {
+    applicationConfiguration {
+      app_details {
+        id
+        description
+        name
+        app_type
+        cache_ttl
+        channel_type
+        company_id
+        created_at
+        updated_at
+        is_active
+        is_internal
+        owner
+        token
+        modified_at
+        version
+        slug
+        mode
+        status
+      }
+      app_currencies {
+        application
+        _id
+        created_at
+        modified_at
+      }
+      basic_details {
+        id
+        description
+        name
+        company_id
+        slug
+      }
+      contact_info {
+        id
+        application
+        copyright_text
+        created_at
+        updated_at
+        version
+      }
+      features {
+        id
+        app
+        created_at
+        updated_at
+        modified_at
+        version
+      }
+      integration_tokens {
+        id
+        application
+        created_at
+        updated_at
+        modified_at
+        version
+      }
+      languages {
+        code
+        name
+      }
+      owner_info {
+        id
+        created_at
+        description
+        is_active
+        name
+        secret
+        token
+        mode
+        slug
+        status
+      }
+    }
+  }
+`;
+
+/**
+ * Get application content - legal information, SEO, support info
+ * Fetches legal policies, announcements, SEO configuration, and support information
+ */
+export const GET_APPLICATION_CONTENT = gql`
+  query applicationContent {
+    applicationContent {
+      announcements {
+        announcements
+        refresh_pages
+        refresh_rate
+      }
+      landing_page {
+        custom_json
+        id
+        application
+        archived
+        platform
+        slug
+      }
+      legal_information {
+        id
+        application
+        created_at
+        policy
+        returns
+        shipping
+        tnc
+        updated_at
+      }
+      seo_configuration {
+        id
+        app
+        cannonical_enabled
+        created_at
+        robots_txt
+        sitemap_enabled
+        updated_at
+        additonal_sitemap
+      }
+      support_information {
+        id
+        application
+        created
+        created_at
+        updated_at
+      }
+      tags {
+        id
+        attributes
+        content
+        name
+        pages
+        position
+        sub_type
+        type
+        url
+        compatible_engines
       }
     }
   }

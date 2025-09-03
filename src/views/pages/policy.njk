@@ -1,0 +1,381 @@
+{% extends "layouts/base.njk" %}
+
+{% block styles %}
+<style>
+    .policy-page {
+        min-height: 60vh;
+        padding: 40px 0;
+    }
+    
+    .policy-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    .policy-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .policy-title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+    
+    .policy-updated {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    
+    .policy-content {
+        font-size: 16px;
+        line-height: 1.8;
+        color: #374151;
+    }
+    
+    .policy-content h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin: 30px 0 15px 0;
+        padding-top: 20px;
+    }
+    
+    .policy-content h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+        margin: 25px 0 12px 0;
+    }
+    
+    .policy-content p {
+        margin-bottom: 15px;
+        text-align: justify;
+    }
+    
+    .policy-content ul,
+    .policy-content ol {
+        margin: 15px 0;
+        padding-left: 30px;
+    }
+    
+    .policy-content li {
+        margin-bottom: 10px;
+    }
+    
+    .policy-content strong {
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .policy-content a {
+        color: #667eea;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .policy-content a:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+    }
+    
+    .policy-content blockquote {
+        border-left: 4px solid #667eea;
+        padding-left: 20px;
+        margin: 20px 0;
+        font-style: italic;
+        color: #4b5563;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .policy-title {
+            font-size: 28px;
+        }
+        
+        .policy-content {
+            font-size: 15px;
+        }
+        
+        .policy-content h2 {
+            font-size: 20px;
+        }
+        
+        .policy-content h3 {
+            font-size: 18px;
+        }
+    }
+    
+    /* Print styles */
+    @media print {
+        .policy-page {
+            padding: 0;
+        }
+        
+        .policy-header {
+            border-bottom: 1px solid #000;
+        }
+        
+        .policy-content {
+            font-size: 12pt;
+        }
+    }
+    
+    /* Back to top button */
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #667eea;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        z-index: 999;
+    }
+    
+    .back-to-top:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+    }
+    
+    .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Related links section */
+    .related-links {
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 2px solid #e5e7eb;
+    }
+    
+    .related-links__title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 20px;
+    }
+    
+    .related-links__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .related-link {
+        display: block;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .related-link:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .related-link__title {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+    
+    .related-link__description {
+        font-size: 14px;
+        color: #6b7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="policy-page">
+    <div class="policy-container">
+        {# Policy Header #}
+        <div class="policy-header">
+            <h1 class="policy-title">{{ pageTitle }}</h1>
+            {% if lastUpdated %}
+            <div class="policy-updated">
+                Last updated: {{ lastUpdated | date('medium') }}
+            </div>
+            {% endif %}
+        </div>
+        
+        {# Policy Content #}
+        <div class="policy-content">
+            {% if content %}
+                {# Display the content from GraphQL #}
+                {{ content | safe }}
+            {% else %}
+                {# Fallback content based on page type #}
+                {% if pageTitle == 'Terms & Conditions' %}
+                    <p>Welcome to {{ store.name }}. By using our website and purchasing our products, you agree to abide by the following terms and conditions. Please read them carefully before placing an order.</p>
+                    
+                    <h2>Product Availability and Pricing</h2>
+                    <p>All prices listed on our website are in INR, inclusive of taxes, unless otherwise stated. We strive to ensure the availability of all our products, but availability is not guaranteed. We reserve the right to modify prices, discontinue products, or update product information at any time without prior notice.</p>
+                    
+                    <h2>Order & Payments</h2>
+                    <p>Once you place an order on our website, you will receive a confirmation email detailing the products purchased, shipping method, and order total. All orders are subject to our acceptance, and we reserve the right to refuse or cancel any order for reasons including but not limited to product availability, pricing errors, or issues with the payment method.</p>
+                    <p>Accepted payment methods include All Domestic Credit and Debit cards, Net banking and UPI. By providing your payment details, you confirm that you are authorized to use the payment method.</p>
+                    
+                    <h2>Shipping & Delivery</h2>
+                    <p>We offer standard and express shipping options. Delivery timelines may vary depending on the destination and shipping method selected. All delivery timelines are estimates, {{ store.name }} is not responsible for delays caused by external factors such as courier issues.</p>
+                    <p>Once an order is placed, we are unable to modify delivery details (such as name, address, or contact information)</p>
+                    
+                    <h2>Cancellation & Modification</h2>
+                    <p>Orders cannot be cancelled or modified once they have been processed and dispatched. If you wish to cancel or modify an order, please contact our Customer Support Team as soon as possible.</p>
+                    
+                    <h2>Intellectual Property</h2>
+                    <p>All content on our website, including images, text, logos, and product descriptions, is the property of {{ store.name }} and is protected by copyright and trademark laws. Unauthorized use of this content is prohibited.</p>
+                    
+                    <h2>Limitation of Liability</h2>
+                    <p>{{ store.name }} shall not be liable for any indirect, incidental, or consequential damages resulting from the use or inability to use our website or products. Our liability is limited to the cost of the product purchased.</p>
+                    
+                    <h2>Changes in Terms & Conditions</h2>
+                    <p>{{ store.name }} reserves the right to modify or update these terms and conditions at any time. Changes will be effective immediately upon posting to our website. It is your responsibility to review these terms periodically.</p>
+                
+                {% elif pageTitle == 'Return & Refund Policy' %}
+                    <p>At {{ store.name }}, due to the nature of our products, we do not offer returns or exchanges once the order has been delivered. If you encounter any issue, you must report it to us within 48 hours of the delivery of your order. We appreciate your understanding and encourage you to reach out to our customer support team with any questions prior to completing your purchase.</p>
+                    
+                    <h2>Refund Timelines</h2>
+                    <ul>
+                        <li>In case of order cancellation, refunds will be processed within 24-48 hours and may take up to 5-7 working days to reflect in the customer's account.</li>
+                        <li>Please allow up to 7 working days for your account to be credited. If you do not receive your refund after 7 working days, please contact your payment processor directly for further information.</li>
+                        <li>Refunds will be based on the value of the merchandise as reflected on your invoice. Shipping and handling charges from your initial order will only be refunded in case of defective or wrong item.</li>
+                        <li>The refund will be issued by {{ store.name }} to your original payment method.</li>
+                    </ul>
+                    <p>We seek your understanding with delays to your refund caused by special events (e.g., online sales).</p>
+                
+                {% elif pageTitle == 'Shipping & Delivery' %}
+                    <h2>Shipping Options</h2>
+                    <p>We offer standard and express shipping options. Delivery timelines may vary depending on the destination and shipping method selected.</p>
+                    
+                    <h2>Delivery Timelines</h2>
+                    <p>All delivery timelines are estimates. {{ store.name }} is not responsible for delays caused by external factors such as courier issues.</p>
+                    
+                    <h2>Order Modification</h2>
+                    <p>Once an order is placed, we are unable to modify delivery details (such as name, address, or contact information).</p>
+                    
+                    <h2>Cancellation & Modification</h2>
+                    <p>Orders cannot be cancelled or modified once they have been processed and dispatched. If you wish to cancel or modify an order, please contact our Customer Support Team as soon as possible.</p>
+                
+                {% elif pageTitle == 'Privacy Policy' %}
+                    <p>At {{ store.name }}, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information.</p>
+                    
+                    <h2>Information We Collect</h2>
+                    <p>We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.</p>
+                    
+                    <h2>How We Use Your Information</h2>
+                    <p>We use the information we collect to provide, maintain, and improve our services, process transactions, and communicate with you.</p>
+                    
+                    <h2>Information Sharing</h2>
+                    <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+                    
+                    <h2>Data Security</h2>
+                    <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+                    
+                    <h2>Contact Us</h2>
+                    <p>If you have any questions about this Privacy Policy, please contact us at {{ store.email | default('support@feelingperfume.com') }}.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        {# Related Links #}
+        <div class="related-links">
+            <h2 class="related-links__title">Related Policies</h2>
+            <div class="related-links__grid">
+                {% if pageTitle != 'Terms & Conditions' %}
+                <a href="/terms-and-conditions" class="related-link">
+                    <div class="related-link__title">Terms & Conditions</div>
+                    <div class="related-link__description">Our terms of service and website usage</div>
+                </a>
+                {% endif %}
+                
+                {% if pageTitle != 'Return & Refund Policy' %}
+                <a href="/return-policy" class="related-link">
+                    <div class="related-link__title">Return & Refund Policy</div>
+                    <div class="related-link__description">Information about returns and refunds</div>
+                </a>
+                {% endif %}
+                
+                {% if pageTitle != 'Shipping & Delivery' %}
+                <a href="/shipping-policy" class="related-link">
+                    <div class="related-link__title">Shipping & Delivery</div>
+                    <div class="related-link__description">Shipping options and delivery times</div>
+                </a>
+                {% endif %}
+                
+                {% if pageTitle != 'Privacy Policy' %}
+                <a href="/privacy-policy" class="related-link">
+                    <div class="related-link__title">Privacy Policy</div>
+                    <div class="related-link__description">How we handle your data</div>
+                </a>
+                {% endif %}
+                
+                <a href="/contact" class="related-link">
+                    <div class="related-link__title">Contact Us</div>
+                    <div class="related-link__description">Get in touch with our support team</div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {# Back to Top Button #}
+    <button class="back-to-top" onclick="scrollToTop()" aria-label="Back to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Back to top functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const backToTopBtn = document.querySelector('.back-to-top');
+    
+    // Show/hide back to top button
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+});
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Print page functionality
+function printPolicy() {
+    window.print();
+}
+</script>
+{% endblock %}

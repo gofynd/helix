@@ -6,23 +6,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
     {# SEO Meta Tags #}
-    <title>{{ seo.title | default('Fynd Storefront') }}</title>
-    <meta name="description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    <title>{{ seo.title | default(store.name) }}</title>
+    <meta name="description" content="{{ seo.description | default(store.description) | default('Shop the latest trends at great prices') }}">
     <link rel="canonical" href="{{ seo.canonical }}">
     
     {# Open Graph Meta Tags #}
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ seo.title | default('Fynd Storefront') }}">
-    <meta property="og:description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    <meta property="og:title" content="{{ seo.title | default(store.name) }}">
+    <meta property="og:description" content="{{ seo.description | default(store.description) | default('Shop the latest trends at great prices') }}">
     <meta property="og:url" content="{{ seo.canonical }}">
     {% if seo.image %}
     <meta property="og:image" content="{{ seo.image }}">
     {% endif %}
+    <meta property="og:site_name" content="{{ store.name }}">
     
     {# Twitter Card Meta Tags #}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ seo.title | default('Fynd Storefront') }}">
-    <meta name="twitter:description" content="{{ seo.description | default('Shop the latest trends at great prices') }}">
+    <meta name="twitter:title" content="{{ seo.title | default(store.name) }}">
+    <meta name="twitter:description" content="{{ seo.description | default(store.description) | default('Shop the latest trends at great prices') }}">
     {% if seo.image %}
     <meta name="twitter:image" content="{{ seo.image }}">
     {% endif %}
@@ -95,7 +96,7 @@
     {# Development only scripts #}
     {% if env === 'development' %}
     <script>
-        console.log('Fynd Storefront SSR v{{ version }}');
+        console.log('{{ store.name }} SSR v{{ version }}');
         console.log('Cache Stats:', {{ cacheStats() | json | safe }});
     </script>
     {% endif %}

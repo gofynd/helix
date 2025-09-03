@@ -23,6 +23,10 @@ import {
   healthCheck,
 } from './middlewares/request';
 import { errorHandler, notFoundHandler } from './middlewares/error';
+import { ignoreRoutesMiddleware, custom404Handler } from './middlewares/ignore-routes';
+import { applicationConfigMiddleware } from './middlewares/application';
+import { cookieForwardingMiddleware } from './middlewares/cookies';
+import { userMiddleware } from './middlewares/auth';
 import { cache } from './lib/cache';
 import { getCSSFilesForPage, getPageNameFromRoute } from './lib/css-helper';
 
@@ -33,6 +37,12 @@ import { pdpRouter } from './routes/pdp';
 import { categoryRouter } from './routes/category';
 import { categoriesRouter } from './routes/categories';
 import { brandsRouter } from './routes/brands';
+import { contactRouter } from './routes/contact';
+import { policiesRouter } from './routes/policies';
+import { authRouter } from './routes/auth';
+import { userRouter } from './routes/user';
+import { wishlistRouter } from './routes/wishlist';
+import { cartRouter } from './routes/cart';
 
 /**
  * Nunjucks template filters and globals
@@ -104,6 +114,11 @@ function setupNunjucksFilters(env: nunjucks.Environment): void {
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  });
+
+  // Default filter for handling undefined values
+  env.addFilter('default', (value: any, defaultValue: any = '') => {
+    return value === null || value === undefined || value === '' ? defaultValue : value;
   });
 
   // JSON filter for safe JSON output
@@ -183,7 +198,7 @@ export function createApp(): Application {
     express: app,
     watch: Config.isDevelopment,
     noCache: Config.isDevelopment,
-    throwOnUndefined: Config.isDevelopment,
+    throwOnUndefined: false, // Disabled to allow default filter to work
   });
 
   // Setup Nunjucks filters and globals
@@ -199,22 +214,38 @@ export function createApp(): Application {
   app.use(securityHeaders);
   app.use(compressionMiddleware);
   
+  // Body parsing middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  
+  // Cookie forwarding middleware - must come before request context
+  app.use(cookieForwardingMiddleware);
+  
   // Rate limiting (skip in development)
   if (!Config.isDevelopment) {
     app.use(rateLimiting);
   }
   
   app.use(requestContext);
-
-  // Static files
+  
+  // Static files (serve before authentication middleware for better performance)
   app.use('/static', express.static(path.join(__dirname, '..', 'public'), {
     maxAge: Config.isProduction ? '1y' : '0',
     etag: true,
     lastModified: true,
   }));
 
-  // Health check endpoint
+  // Ignore common bot/tool requests (early in middleware chain)
+  app.use(ignoreRoutesMiddleware);
+
+  // Health check endpoint (no authentication required)
   app.get('/health', healthCheck);
+  
+  // Application configuration middleware - injects store data into all views
+  app.use(applicationConfigMiddleware);
+  
+  // User authentication middleware - checks login status (after static files)
+  app.use(userMiddleware);
 
   // API routes
   app.use('/', homeRouter);
@@ -223,9 +254,15 @@ export function createApp(): Application {
   app.use('/category', categoryRouter);
   app.use('/categories', categoriesRouter);
   app.use('/brands', brandsRouter);
+  app.use('/contact', contactRouter);
+  app.use('/', policiesRouter); // Policy pages use root path
+  app.use('/', authRouter); // Auth routes
+  app.use('/user', userRouter); // User profile routes
+  app.use('/wishlist', wishlistRouter); // Wishlist routes
+  app.use('/cart', cartRouter); // Cart routes
 
-  // 404 handler
-  app.use(notFoundHandler);
+  // 404 handler - custom page for unmatched routes
+  app.use(custom404Handler);
 
   // Error handler (must be last)
   app.use(errorHandler);

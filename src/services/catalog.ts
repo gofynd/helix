@@ -8,6 +8,7 @@ import { Config } from '@/lib/config';
 import {
   GET_PRODUCT,
   GET_PRODUCTS,
+  GET_PRODUCT_PRICE,
   GET_CATEGORY,
   GET_CATEGORIES,
   GET_CATEGORY_PRODUCTS,
@@ -48,7 +49,7 @@ export class ProductService {
   }
 
   /**
-   * Get products listing
+   * Get products listing  
    */
   static async getProducts(
     params: {
@@ -110,6 +111,35 @@ export class ProductService {
         return data.searchProducts;
       },
       Config.cacheTtl / 2, // Shorter cache for search results
+      context?.traceId
+    );
+  }
+
+  /**
+   * Get product price by size
+   * Fetches size-specific pricing information including discounts, delivery promise, etc.
+   */
+  static async getProductPrice(
+    slug: string,
+    size: string,
+    pincode: string = '',
+    context?: RequestContext
+  ): Promise<any> {
+    const client = GraphQLClientFactory.createForRequest(context || {});
+    const cacheKey = CacheKeyBuilder.graphql('ProductPrice', { slug, size, pincode });
+
+    return cache.getOrSet(
+      cacheKey,
+      async () => {
+        const data = await GraphQLClientFactory.executeQuery(
+          client,
+          GET_PRODUCT_PRICE,
+          { slug, size, pincode },
+          context
+        );
+        return data.productPrice;
+      },
+      Config.cacheTtl / 4, // Shorter cache for price data as it can change frequently
       context?.traceId
     );
   }
@@ -358,4 +388,127 @@ export const CatalogService = {
   Category: CategoryService,
   Collection: CollectionService,
   Brand: BrandService,
+  
+  // Spread all methods from services for backwards compatibility
+  ...ProductService,
+  ...CategoryService,
+  ...CollectionService,
+  ...BrandService,
+  
+  // Wishlist methods (placeholder implementations)
+  async getUserWishlist(_context: RequestContext, _userId: string): Promise<any[]> {
+    // In a real implementation, this would fetch wishlist items from the API
+    // For now, return empty array or mock data
+    return [];
+  },
+
+  async addToWishlist(
+    _context: RequestContext, 
+    _userId: string, 
+    _item: { productSlug: string; variantId?: string }
+  ): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Added to wishlist',
+      itemId: `wishlist-${Date.now()}`,
+    };
+  },
+
+  async removeFromWishlist(
+    _context: RequestContext, 
+    _userId: string, 
+    _itemId: string
+  ): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Removed from wishlist',
+    };
+  },
+
+  // Cart methods (placeholder implementations)
+  async getUserCart(_context: RequestContext, userId: string): Promise<any> {
+    // In a real implementation, this would fetch the user's cart
+    return {
+      id: `cart-${userId}`,
+      items: [],
+    };
+  },
+
+  async getCartItems(_context: RequestContext, _cartId: string): Promise<any[]> {
+    // In a real implementation, this would fetch cart items from the API
+    return [];
+  },
+
+  async getCartSummary(_context: RequestContext, _cartId: string): Promise<any> {
+    // In a real implementation, this would calculate cart totals
+    return {
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+      shipping: 0,
+      total: 0,
+      itemCount: 0,
+    };
+  },
+
+  async createCart(_context: RequestContext, userId?: string): Promise<string> {
+    // Create a new cart and return its ID
+    return `cart-${userId || 'anonymous'}-${Date.now()}`;
+  },
+
+  async createAnonymousCart(_context: RequestContext): Promise<string> {
+    // Create an anonymous cart and return its ID
+    return `cart-anonymous-${Date.now()}`;
+  },
+
+  async addToCart(
+    _context: RequestContext,
+    cartId: string,
+    _item: { productSlug: string; variantId?: string; quantity: number }
+  ): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Added to cart',
+      cartId,
+      itemId: `cart-item-${Date.now()}`,
+    };
+  },
+
+  async updateCartItem(
+    _context: RequestContext,
+    _cartId: string,
+    itemId: string,
+    quantity: number
+  ): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Cart updated',
+      itemId,
+      quantity,
+    };
+  },
+
+  async removeFromCart(
+    _context: RequestContext,
+    _cartId: string,
+    _itemId: string
+  ): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Removed from cart',
+    };
+  },
+
+  async clearCart(_context: RequestContext, _cartId: string): Promise<any> {
+    // Placeholder implementation
+    return {
+      success: true,
+      message: 'Cart cleared',
+    };
+  },
 };

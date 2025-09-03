@@ -29,6 +29,7 @@ const configSchema = z.object({
   fynd: z.object({
     authToken: z.string().min(1, 'FYND_AUTH_TOKEN is required'),
     apiBaseUrl: z.string().url().default('https://api.fynd.com/service/application/graphql'),
+    applicationId: z.string().default('67a9fef03076c6a7a761763f'),
   }),
 
   // Server
@@ -75,6 +76,7 @@ function loadConfig(): Config {
     fynd: {
       authToken: process.env.FYND_AUTH_TOKEN,
       apiBaseUrl: process.env.FYND_API_BASE_URL,
+      applicationId: process.env.FYND_APPLICATION_ID,
     },
     server: {
       nodeEnv: process.env.NODE_ENV,
@@ -121,9 +123,13 @@ export const config = loadConfig();
  * Type-safe configuration access helpers
  */
 export const Config = {
+  // Full config object for advanced usage
+  get fynd() { return config.fynd; },
+  
   // Fynd Platform
   get fyndApiUrl() { return config.fynd.apiBaseUrl; },
   get fyndAuthToken() { return config.fynd.authToken; },
+  get applicationId() { return config.fynd.applicationId; },
 
   // Server
   get isDevelopment() { return config.server.nodeEnv === 'development'; },
@@ -153,8 +159,12 @@ export const Config = {
    * Gets Fynd GraphQL headers for authentication
    */
   getFyndHeaders() {
+    // If the token already includes "Bearer ", use it as is
+    const token = this.fyndAuthToken;
+    const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    
     return {
-      'authorization': `Bearer ${this.fyndAuthToken}`,
+      'authorization': authHeader,
       'content-type': 'application/json',
     };
   },

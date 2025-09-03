@@ -7,11 +7,15 @@
                 {# Company Info #}
                 <div class="footer__section">
                     <div class="footer__logo">
-                        <img src="/static/images/logo.svg" alt="Fynd Storefront" class="footer__logo-image">
+                        <img src="/static/images/logo.svg" alt="{{ store.name }}" class="footer__logo-image">
                     </div>
                     <p class="footer__description">
-                        Your one-stop destination for the latest trends and best deals. 
-                        Shop with confidence and enjoy fast delivery.
+                        {% if store.description %}
+                            {{ store.description }}
+                        {% else %}
+                            Your one-stop destination for the latest trends and best deals. 
+                            Shop with confidence and enjoy fast delivery.
+                        {% endif %}
                     </p>
                     <div class="footer__social">
                         <a href="#" class="footer__social-link" aria-label="Facebook">
@@ -50,8 +54,8 @@
                     <ul class="footer__links">
                         <li><a href="/contact" class="footer__link">Contact Us</a></li>
                         <li><a href="/help" class="footer__link">Help Center</a></li>
-                        <li><a href="/shipping" class="footer__link">Shipping Info</a></li>
-                        <li><a href="/returns" class="footer__link">Returns</a></li>
+                        <li><a href="/shipping-policy" class="footer__link">Shipping & Delivery</a></li>
+                        <li><a href="/return-policy" class="footer__link">Returns & Refunds</a></li>
                         <li><a href="/track-order" class="footer__link">Track Order</a></li>
                     </ul>
                 </div>
@@ -105,10 +109,10 @@
             <div class="footer__bottom-content">
                 <div class="footer__legal">
                     <ul class="footer__legal-links">
-                        <li><a href="/privacy" class="footer__legal-link">Privacy Policy</a></li>
-                        <li><a href="/terms" class="footer__legal-link">Terms of Service</a></li>
-                        <li><a href="/cookies" class="footer__legal-link">Cookie Policy</a></li>
-                        <li><a href="/accessibility" class="footer__legal-link">Accessibility</a></li>
+                        <li><a href="/privacy-policy" class="footer__legal-link">Privacy Policy</a></li>
+                        <li><a href="/terms-and-conditions" class="footer__legal-link">Terms & Conditions</a></li>
+                        <li><a href="/return-policy" class="footer__legal-link">Return Policy</a></li>
+                        <li><a href="/shipping-policy" class="footer__legal-link">Shipping Policy</a></li>
                     </ul>
                 </div>
                 
@@ -123,7 +127,7 @@
                 </div>
                 
                 <div class="footer__copyright">
-                    <p>&copy; {{ "now" | date("Y") }} Fynd Storefront. All rights reserved.</p>
+                    <p>{{ store.copyrightText }}</p>
                 </div>
             </div>
         </div>

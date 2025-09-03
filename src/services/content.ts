@@ -13,6 +13,7 @@ import {
   GET_APP_CONFIG,
   GET_FOOTER,
 } from '@/graphql/queries/content';
+import { GET_APPLICATION_CONTENT } from '@/graphql/queries/catalog';
 
 /**
  * Home page service operations
@@ -308,6 +309,58 @@ export class ApplicationService {
       Config.cacheTtl * 4, // Long cache for footer
       context?.traceId
     );
+  }
+
+  /**
+   * Get application content including legal information
+   */
+  static async getApplicationContent(context?: RequestContext): Promise<any> {
+    const client = GraphQLClientFactory.createForRequest(context || {});
+    const cacheKey = CacheKeyBuilder.graphql('GetApplicationContent', {});
+
+    return cache.getOrSet(
+      cacheKey,
+      async () => {
+        try {
+          const data = await GraphQLClientFactory.executeQuery(
+            client,
+            GET_APPLICATION_CONTENT,
+            {},
+            context
+          );
+          return data.applicationContent;
+        } catch (error) {
+          console.error('Failed to fetch application content:', error);
+          // Return default legal information on error
+          return {
+            legal_information: {
+              tnc: 'Terms and conditions content will be loaded here.',
+              policy: 'Privacy policy content will be loaded here.',
+              shipping: 'Shipping policy content will be loaded here.',
+              returns: 'Return policy content will be loaded here.'
+            },
+            seo_configuration: {},
+            support_information: {},
+            announcements: {}
+          };
+        }
+      },
+      Config.cacheTtl * 8, // Very long cache for application content
+      context?.traceId
+    );
+  }
+
+  /**
+   * Get legal information specifically
+   */
+  static async getLegalInformation(context?: RequestContext): Promise<any> {
+    const appContent = await this.getApplicationContent(context);
+    return appContent?.legal_information || {
+      tnc: '',
+      policy: '',
+      shipping: '',
+      returns: ''
+    };
   }
 }
 

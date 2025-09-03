@@ -65,14 +65,44 @@
                     </div>
                     {% endif %}
 
-                    {% if product.price %}
+                    {# Display price - use productPrice if available (size selected), otherwise use default price #}
+                    {% if productPrice %}
                     <div class="product-details__price">
                         <span class="product-details__price-current">
-                            ₹{{ product.price.effective.min | number_format }}
+                            {{ productPrice.price.currency_symbol }}{{ productPrice.price.selling | number_format }}
+                        </span>
+                        {% if productPrice.price.marked > productPrice.price.selling %}
+                        <span class="product-details__price-original">
+                            {{ productPrice.price.currency_symbol }}{{ productPrice.price.marked | number_format }}
+                        </span>
+                        {% if productPrice.discount %}
+                        <span class="product-details__discount">{{ productPrice.discount }}% OFF</span>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% elif product.sizes and product.sizes.price %}
+                    <div class="product-details__price">
+                        <span class="product-details__price-current">
+                            {{ product.sizes.price.effective.currency_symbol | default('₹') }}{{ product.sizes.price.effective.min | number_format }}
+                        </span>
+                        {% if product.sizes.price.marked.min > product.sizes.price.effective.min %}
+                        <span class="product-details__price-original">
+                            {{ product.sizes.price.marked.currency_symbol | default('₹') }}{{ product.sizes.price.marked.min | number_format }}
+                        </span>
+                        {% set discount = ((product.sizes.price.marked.min - product.sizes.price.effective.min) / product.sizes.price.marked.min * 100) | round %}
+                        {% if discount > 0 %}
+                        <span class="product-details__discount">{{ discount }}% OFF</span>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% elif product.price %}
+                    <div class="product-details__price">
+                        <span class="product-details__price-current">
+                            {{ product.price.effective.currency_symbol | default('₹') }}{{ product.price.effective.min | number_format }}
                         </span>
                         {% if product.price.marked.min > product.price.effective.min %}
                         <span class="product-details__price-original">
-                            ₹{{ product.price.marked.min | number_format }}
+                            {{ product.price.marked.currency_symbol | default('₹') }}{{ product.price.marked.min | number_format }}
                         </span>
                         {% set discount = ((product.price.marked.min - product.price.effective.min) / product.price.marked.min * 100) | round %}
                         {% if discount > 0 %}
@@ -93,7 +123,19 @@
                     </div>
                     {% endif %}
 
-                    {% if product.sellable %}
+                    {# Check stock status - if sizes exist, check if any size is available #}
+                    {% set isInStock = false %}
+                    {% if product.sizes and product.sizes.size_details and product.sizes.size_details.length > 0 %}
+                        {% for size in product.sizes.size_details %}
+                            {% if size.is_available and size.quantity > 0 %}
+                                {% set isInStock = true %}
+                            {% endif %}
+                        {% endfor %}
+                    {% elif product.sellable %}
+                        {% set isInStock = true %}
+                    {% endif %}
+                    
+                    {% if isInStock %}
                     <div class="inventory-status">
                         <div class="inventory-status__indicator inventory-status__indicator--in-stock"></div>
                         <span class="inventory-status__text inventory-status__text--in-stock">In Stock</span>
@@ -108,6 +150,51 @@
                     {% if product.short_description %}
                     <div class="product-details__description">
                         <p>{{ product.short_description }}</p>
+                    </div>
+                    {% endif %}
+
+                    {# Size Selection Section #}
+                    {% if product.sizes and product.sizes.size_details and product.sizes.size_details.length > 0 %}
+                    <div class="product-sizes">
+                        <div class="product-sizes__label">Select Size:</div>
+                        <div class="product-sizes__options">
+                            {% for size in product.sizes.size_details %}
+                            <button class="product-sizes__option {{ 'product-sizes__option--selected' if selectedSize == size.display or (not selectedSize and loop.first) }}"
+                                    data-size="{{ size.display }}"
+                                    data-size-slug="{{ product.slug }}"
+                                    {% if not size.is_available %}disabled{% endif %}>
+                                {{ size.display }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                        {% if productPrice %}
+                        <div class="product-sizes__price-info">
+                            <div class="product-details__price">
+                                <span class="product-details__price-current">
+                                    {{ productPrice.price.currency_symbol }}{{ productPrice.price.selling | number_format }}
+                                </span>
+                                {% if productPrice.price.marked > productPrice.price.selling %}
+                                <span class="product-details__price-original">
+                                    {{ productPrice.price.currency_symbol }}{{ productPrice.price.marked | number_format }}
+                                </span>
+                                {% if productPrice.discount %}
+                                <span class="product-details__discount">{{ productPrice.discount }}% OFF</span>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if productPrice.delivery_promise %}
+                            <div class="product-sizes__delivery">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16,8 20,8 23,11 23,16 16,16"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                                Delivery in {{ productPrice.delivery_promise.min }}-{{ productPrice.delivery_promise.max }} days
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                     {% endif %}
 
@@ -144,8 +231,8 @@
                         <div class="product-actions__buttons">
                             <button class="product-actions__add-to-cart btn-add-to-cart"
                                     data-product-id="{{ product.uid }}"
-                                    {% if not product.sellable %}disabled{% endif %}>
-                                {% if product.sellable %}
+                                    {% if not isInStock %}disabled{% endif %}>
+                                {% if isInStock %}
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                                     <circle cx="9" cy="21" r="1"></circle>
                                     <circle cx="20" cy="21" r="1"></circle>
@@ -256,4 +343,297 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Size selection styles */
+    .product-sizes {
+        margin: 20px 0;
+    }
+    
+    .product-sizes__label {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+    }
+    
+    .product-sizes__options {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+    
+    .product-sizes__option {
+        padding: 12px 24px;
+        border: 2px solid #ddd;
+        background: white;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .product-sizes__option:hover:not(:disabled) {
+        border-color: #333;
+        background-color: #f5f5f5;
+    }
+    
+    .product-sizes__option--selected {
+        background-color: #333 !important;
+        color: white !important;
+        border-color: #333 !important;
+    }
+    
+    .product-sizes__option:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #f0f0f0;
+    }
+    
+    .product-sizes__price-info {
+        padding: 16px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin-top: 12px;
+    }
+    
+    .product-sizes__delivery {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .loading {
+        color: #666;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .error {
+        color: #d32f2f;
+        padding: 12px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Size selection and dynamic price fetching
+document.addEventListener('DOMContentLoaded', function() {
+    const sizeButtons = document.querySelectorAll('.product-sizes__option:not([disabled])');
+    const priceInfoSection = document.querySelector('.product-sizes__price-info');
+    
+    // Function to handle size selection
+    async function selectSize(button) {
+        // Don't do anything if this size is already selected
+        if (button.classList.contains('product-sizes__option--selected')) {
+            return;
+        }
+        
+        // Remove selected class from all buttons
+        sizeButtons.forEach(btn => btn.classList.remove('product-sizes__option--selected'));
+        
+        // Add selected class to clicked button
+        button.classList.add('product-sizes__option--selected');
+        
+        // Get size and product slug
+        const size = button.dataset.size;
+        const slug = button.dataset.sizeSlug;
+        
+        // Update URL with size query parameter
+        const url = new URL(window.location);
+        url.searchParams.set('size', size);
+        window.history.pushState({}, '', url);
+        
+        // Show loading state
+        if (priceInfoSection) {
+            priceInfoSection.innerHTML = '<div class="loading">Loading price...</div>';
+        }
+        
+        try {
+            // Fetch price for selected size
+            const response = await fetch(`/product/api/${slug}/price?size=${encodeURIComponent(size)}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                updatePriceDisplay(data.data);
+            } else {
+                console.error('Failed to fetch price');
+                if (priceInfoSection) {
+                    priceInfoSection.innerHTML = '<div class="error">Unable to fetch price</div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching price:', error);
+            if (priceInfoSection) {
+                priceInfoSection.innerHTML = '<div class="error">Unable to fetch price</div>';
+            }
+        }
+    }
+    
+    // Add click event listeners to all size buttons
+    sizeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectSize(this);
+        });
+    });
+    
+    function updatePriceDisplay(priceData) {
+        if (!priceInfoSection) return;
+        
+        let html = '<div class="product-details__price">';
+        
+        // Current price
+        html += `<span class="product-details__price-current">
+                    ${priceData.price.currency_symbol}${formatNumber(priceData.price.selling)}
+                 </span>`;
+        
+        // Original price and discount
+        if (priceData.price.marked > priceData.price.selling) {
+            html += `<span class="product-details__price-original">
+                        ${priceData.price.currency_symbol}${formatNumber(priceData.price.marked)}
+                     </span>`;
+            
+            if (priceData.discount) {
+                html += `<span class="product-details__discount">${priceData.discount}% OFF</span>`;
+            }
+        }
+        
+        html += '</div>';
+        
+        // Delivery promise
+        if (priceData.delivery_promise) {
+            html += `<div class="product-sizes__delivery">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="1" y="3" width="15" height="13"></rect>
+                            <polygon points="16,8 20,8 23,11 23,16 16,16"></polygon>
+                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                        </svg>
+                        Delivery in ${priceData.delivery_promise.min}-${priceData.delivery_promise.max} days
+                     </div>`;
+        }
+        
+        // Stock availability
+        if (priceData.quantity !== undefined) {
+            const stockStatus = priceData.quantity > 0 ? 'in-stock' : 'out-of-stock';
+            const stockText = priceData.quantity > 0 ? `${priceData.quantity} in stock` : 'Out of stock';
+            html += `<div class="product-sizes__stock product-sizes__stock--${stockStatus}">
+                        ${stockText}
+                     </div>`;
+        }
+        
+        priceInfoSection.innerHTML = html;
+        
+        // Update add to cart button state
+        const addToCartBtn = document.querySelector('.btn-add-to-cart');
+        if (addToCartBtn) {
+            addToCartBtn.disabled = priceData.quantity === 0;
+            addToCartBtn.textContent = priceData.quantity > 0 ? 'Add to Cart' : 'Out of Stock';
+        }
+    }
+    
+    function formatNumber(num) {
+        return new Intl.NumberFormat('en-IN').format(num);
+    }
+    
+    // Handle direct URL with size parameter on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const sizeParam = urlParams.get('size');
+    
+    // If we have a size in the URL and it's different from the selected size, trigger a selection
+    if (sizeParam) {
+        const targetButton = document.querySelector(`.product-sizes__option[data-size="${sizeParam}"]`);
+        const currentSelected = document.querySelector('.product-sizes__option--selected');
+        
+        // If the target button exists and is not already selected
+        if (targetButton && !targetButton.disabled && targetButton !== currentSelected) {
+            // Remove selected class from all buttons
+            sizeButtons.forEach(btn => btn.classList.remove('product-sizes__option--selected'));
+            // Add selected class to the target button
+            targetButton.classList.add('product-sizes__option--selected');
+        }
+    }
+    
+    // Log for debugging
+    console.log('Size selection initialized. URL size param:', sizeParam);
+});
+
+// Product gallery functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const thumbnails = document.querySelectorAll('.product-gallery__thumbnail');
+    const mainImage = document.querySelector('.product-gallery__main-image');
+    
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            // Remove active class from all thumbnails
+            thumbnails.forEach(thumb => thumb.classList.remove('product-gallery__thumbnail--active'));
+            
+            // Add active class to clicked thumbnail
+            this.classList.add('product-gallery__thumbnail--active');
+            
+            // Update main image
+            if (mainImage) {
+                mainImage.src = this.dataset.imageUrl;
+            }
+        });
+    });
+});
+
+// Product tabs functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.product-info__tab');
+    const tabContents = document.querySelectorAll('.product-info__tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('product-info__tab--active'));
+            tabContents.forEach(content => content.classList.remove('product-info__tab-content--active'));
+            
+            // Add active class to clicked tab and corresponding content
+            this.classList.add('product-info__tab--active');
+            const activeContent = document.querySelector(`.product-info__tab-content[data-tab="${tabName}"]`);
+            if (activeContent) {
+                activeContent.classList.add('product-info__tab-content--active');
+            }
+        });
+    });
+});
+
+// Quantity selector
+document.addEventListener('DOMContentLoaded', function() {
+    const decreaseBtn = document.querySelector('[data-action="decrease"]');
+    const increaseBtn = document.querySelector('[data-action="increase"]');
+    const quantityInput = document.querySelector('.product-actions__quantity-input');
+    
+    if (decreaseBtn && increaseBtn && quantityInput) {
+        decreaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+        
+        increaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(quantityInput.value);
+            const maxValue = parseInt(quantityInput.max);
+            if (currentValue < maxValue) {
+                quantityInput.value = currentValue + 1;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

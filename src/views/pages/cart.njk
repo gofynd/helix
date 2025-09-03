@@ -1,0 +1,319 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {# Page Header #}
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+        <p class="text-gray-600">{{ cartSummary.itemCount }} item{% if cartSummary.itemCount != 1 %}s{% endif %} in your cart</p>
+    </div>
+
+    {% if cartItems and cartItems.length > 0 %}
+    <div class="grid gap-8 lg:grid-cols-3">
+        {# Cart Items #}
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                {% for item in cartItems %}
+                <div class="border-b border-gray-200 p-6 {% if loop.last %}border-b-0{% endif %}" data-cart-item="{{ item.id }}">
+                    <div class="flex gap-4">
+                        {# Product Image #}
+                        <div class="flex-shrink-0">
+                            <a href="/product/{{ item.product.slug }}">
+                                <img 
+                                    src="{{ item.product.images[0].url | default('/static/images/placeholder.jpg') }}" 
+                                    alt="{{ item.product.name }}"
+                                    class="w-24 h-24 object-cover rounded-lg"
+                                >
+                            </a>
+                        </div>
+
+                        {# Product Details #}
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-2">
+                                <div>
+                                    {% if item.product.brand %}
+                                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">{{ item.product.brand.name }}</p>
+                                    {% endif %}
+                                    <h3 class="font-semibold text-gray-900">
+                                        <a href="/product/{{ item.product.slug }}" class="hover:text-primary-600 transition-colors">
+                                            {{ item.product.name }}
+                                        </a>
+                                    </h3>
+                                    {% if item.variant %}
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        {% if item.variant.size %}Size: {{ item.variant.size }}{% endif %}
+                                        {% if item.variant.color %}{% if item.variant.size %}, {% endif %}Color: {{ item.variant.color }}{% endif %}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                
+                                {# Remove Button #}
+                                <button 
+                                    onclick="removeFromCart('{{ item.id }}')"
+                                    class="text-gray-400 hover:text-red-600 transition-colors"
+                                    aria-label="Remove item"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="flex justify-between items-end">
+                                {# Quantity Selector #}
+                                <div class="flex items-center gap-2">
+                                    <label for="quantity-{{ item.id }}" class="text-sm text-gray-600">Qty:</label>
+                                    <div class="flex items-center border border-gray-300 rounded-lg">
+                                        <button 
+                                            onclick="updateQuantity('{{ item.id }}', {{ item.quantity - 1 }})"
+                                            class="px-3 py-1 hover:bg-gray-100 transition-colors"
+                                            {% if item.quantity <= 1 %}disabled{% endif %}
+                                        >
+                                            -
+                                        </button>
+                                        <input 
+                                            type="number" 
+                                            id="quantity-{{ item.id }}"
+                                            value="{{ item.quantity }}"
+                                            min="1"
+                                            max="{{ item.product.maxQuantity | default(10) }}"
+                                            class="w-12 text-center border-0 focus:ring-0"
+                                            onchange="updateQuantity('{{ item.id }}', this.value)"
+                                        >
+                                        <button 
+                                            onclick="updateQuantity('{{ item.id }}', {{ item.quantity + 1 }})"
+                                            class="px-3 py-1 hover:bg-gray-100 transition-colors"
+                                            {% if item.quantity >= (item.product.maxQuantity | default(10)) %}disabled{% endif %}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {# Price #}
+                                <div class="text-right">
+                                    {% if item.product.salePrice %}
+                                    <p class="text-sm text-gray-500 line-through">{{ (item.product.price * item.quantity) | price }}</p>
+                                    <p class="text-lg font-bold text-gray-900">{{ (item.product.salePrice * item.quantity) | price }}</p>
+                                    {% else %}
+                                    <p class="text-lg font-bold text-gray-900">{{ (item.product.price * item.quantity) | price }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {# Coupon Code #}
+            <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+                <h3 class="font-semibold text-gray-900 mb-4">Have a coupon?</h3>
+                <form class="flex gap-2" onsubmit="applyCoupon(event)">
+                    <input 
+                        type="text" 
+                        name="coupon"
+                        placeholder="Enter coupon code"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    >
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200"
+                    >
+                        Apply
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {# Order Summary #}
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+                
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span>{{ cartSummary.subtotal | price }}</span>
+                    </div>
+                    
+                    {% if cartSummary.discount > 0 %}
+                    <div class="flex justify-between text-green-600">
+                        <span>Discount</span>
+                        <span>-{{ cartSummary.discount | price }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-between text-gray-600">
+                        <span>Estimated Tax</span>
+                        <span>{{ cartSummary.tax | price }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between text-gray-600">
+                        <span>Shipping</span>
+                        <span>{% if cartSummary.shipping %}{{ cartSummary.shipping | price }}{% else %}Free{% endif %}</span>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mb-6">
+                    <div class="flex justify-between text-lg font-semibold text-gray-900">
+                        <span>Total</span>
+                        <span>{{ cartSummary.total | price }}</span>
+                    </div>
+                </div>
+
+                {% if user %}
+                <a 
+                    href="/checkout"
+                    class="block w-full px-6 py-3 bg-primary-600 text-white text-center font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200"
+                >
+                    Proceed to Checkout
+                </a>
+                {% else %}
+                <div class="space-y-3">
+                    <a 
+                        href="/checkout"
+                        class="block w-full px-6 py-3 bg-primary-600 text-white text-center font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200"
+                    >
+                        Checkout as Guest
+                    </a>
+                    <a 
+                        href="/login?redirectUrl=%2Fcart"
+                        class="block w-full px-6 py-3 border border-primary-600 text-primary-600 text-center font-medium rounded-lg hover:bg-primary-50 transition-colors duration-200"
+                    >
+                        Login to Checkout
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="mt-6 space-y-2">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Secure checkout
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Free returns within 30 days
+                    </div>
+                </div>
+
+                {# Payment Methods #}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600 mb-2">We accept</p>
+                    <div class="flex gap-2">
+                        <img src="/static/images/payment/visa.svg" alt="Visa" class="h-8">
+                        <img src="/static/images/payment/mastercard.svg" alt="Mastercard" class="h-8">
+                        <img src="/static/images/payment/amex.svg" alt="American Express" class="h-8">
+                        <img src="/static/images/payment/paypal.svg" alt="PayPal" class="h-8">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    {# Empty Cart #}
+    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+        <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
+        <p class="text-gray-600 mb-6">Looks like you haven't added anything to your cart yet</p>
+        <a 
+            href="/products"
+            class="inline-block px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200"
+        >
+            Continue Shopping
+        </a>
+    </div>
+    {% endif %}
+
+    {# Recommended Products #}
+    {% if recommendedProducts %}
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">You might also like</h2>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {% for product in recommendedProducts %}
+            {% include "partials/product-card.njk" %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function updateQuantity(itemId, newQuantity) {
+    if (newQuantity < 1) return;
+    
+    try {
+        const response = await fetch(`/cart/api/update/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ quantity: parseInt(newQuantity) })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            location.reload(); // Reload to update totals
+        } else {
+            alert('Error updating quantity: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating quantity');
+    }
+}
+
+async function removeFromCart(itemId) {
+    if (!confirm('Remove this item from cart?')) return;
+    
+    try {
+        const response = await fetch(`/cart/api/remove/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('Error removing item: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while removing the item');
+    }
+}
+
+async function applyCoupon(event) {
+    event.preventDefault();
+    const coupon = event.target.coupon.value;
+    
+    if (!coupon) {
+        alert('Please enter a coupon code');
+        return;
+    }
+    
+    // This would call an API to apply the coupon
+    alert('Coupon functionality coming soon!');
+}
+
+// Update cart count in header
+document.addEventListener('DOMContentLoaded', function() {
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) {
+        cartCount.textContent = '{{ cartSummary.itemCount }}';
+    }
+});
+</script>
+{% endblock %}

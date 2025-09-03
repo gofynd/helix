@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { pdpController, pdpApiController } from '@/controllers/pdp';
+import { pdpController, pdpApiController, productPriceApiController } from '@/controllers/pdp';
 
 export const pdpRouter = Router();
 
@@ -12,3 +12,6 @@ pdpRouter.get('/:slug', pdpController);
 
 // Product detail API
 pdpRouter.get('/api/:slug', pdpApiController);
+
+// Product price API
+pdpRouter.get('/api/:slug/price', productPriceApiController);

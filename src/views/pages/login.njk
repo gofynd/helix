@@ -1,0 +1,820 @@
+{% extends "layouts/base.njk" %}
+
+{% block styles %}
+<style>
+    .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+    
+    .login-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        max-width: 440px;
+        width: 100%;
+        padding: 40px;
+    }
+    
+    .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .login-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+    
+    .login-subtitle {
+        font-size: 18px;
+        color: #6b7280;
+    }
+    
+    .login-tabs {
+        display: flex;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .login-tab {
+        flex: 1;
+        padding: 12px;
+        background: none;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s;
+    }
+    
+    .login-tab:hover {
+        color: #111827;
+    }
+    
+    .login-tab.active {
+        color: #667eea;
+    }
+    
+    .login-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #667eea;
+    }
+    
+    .login-form {
+        display: none;
+    }
+    
+    .login-form.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #374151;
+        font-size: 14px;
+    }
+    
+    .form-label span.required {
+        color: #ef4444;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.2s;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-input.error {
+        border-color: #ef4444;
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 5px;
+        display: none;
+    }
+    
+    .error-message.show {
+        display: block;
+    }
+    
+    .phone-input-group {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .country-select {
+        width: 120px;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .country-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .phone-input {
+        flex: 1;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+        width: 100%;
+        padding: 14px 24px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+        background: #f3f4f6;
+    }
+    
+    .btn-secondary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .otp-section {
+        display: none;
+    }
+    
+    .otp-section.active {
+        display: block;
+    }
+    
+    .otp-inputs {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .otp-input {
+        width: 50px;
+        height: 50px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .otp-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .resend-timer {
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 15px;
+    }
+    
+    .resend-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .resend-link:hover {
+        text-decoration: underline;
+    }
+    
+    .resend-link.disabled {
+        color: #9ca3af;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .terms-text {
+        text-align: center;
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 20px;
+    }
+    
+    .terms-text a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .terms-text a:hover {
+        text-decoration: underline;
+    }
+    
+    .forgot-password {
+        text-align: right;
+        margin-top: 10px;
+    }
+    
+    .forgot-password a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .forgot-password a:hover {
+        text-decoration: underline;
+    }
+    
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .alert.show {
+        display: block;
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .loading-overlay.show {
+        display: flex;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e5e7eb;
+    }
+    
+    .divider span {
+        background: white;
+        padding: 0 10px;
+        position: relative;
+        color: #6b7280;
+        font-size: 14px;
+    }
+    
+    .flag-icon {
+        width: 20px;
+        height: 15px;
+        display: inline-block;
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <h1 class="login-title">Login</h1>
+            <p class="login-subtitle">To {{ storeName }}</p>
+        </div>
+        
+        <!-- Alert Messages -->
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
+        
+        <!-- Login Tabs -->
+        <div class="login-tabs">
+            <button class="login-tab active" data-tab="otp">SMS OTP</button>
+            <button class="login-tab" data-tab="password">EMAIL/PASSWORD</button>
+        </div>
+        
+        <!-- OTP Login Form -->
+        <div class="login-form active" id="otpForm">
+            <form id="otpLoginForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        Mobile <span class="required">*</span>
+                    </label>
+                    <div class="phone-input-group">
+                        <select class="country-select" id="countryCode">
+                            <option value="91" selected>🇮🇳 +91</option>
+                            <option value="1">🇺🇸 +1</option>
+                            <option value="44">🇬🇧 +44</option>
+                            <option value="971">🇦🇪 +971</option>
+                        </select>
+                        <input 
+                            type="tel" 
+                            class="form-input phone-input" 
+                            id="mobileNumber"
+                            placeholder="Enter mobile number"
+                            maxlength="10"
+                            required
+                        >
+                    </div>
+                    <span class="error-message" id="mobileError"></span>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="sendOtpBtn">
+                    GET OTP
+                </button>
+            </form>
+            
+            <!-- OTP Verification Section -->
+            <div class="otp-section" id="otpSection">
+                <div class="divider">
+                    <span>Enter OTP</span>
+                </div>
+                
+                <form id="otpVerifyForm">
+                    <div class="otp-inputs">
+                        <input type="text" class="otp-input" maxlength="1" data-index="0">
+                        <input type="text" class="otp-input" maxlength="1" data-index="1">
+                        <input type="text" class="otp-input" maxlength="1" data-index="2">
+                        <input type="text" class="otp-input" maxlength="1" data-index="3">
+                        <input type="text" class="otp-input" maxlength="1" data-index="4">
+                        <input type="text" class="otp-input" maxlength="1" data-index="5">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="verifyOtpBtn">
+                        VERIFY OTP
+                    </button>
+                    
+                    <div class="resend-timer" id="resendTimer">
+                        Resend OTP in <span id="timerCount">30</span> seconds
+                    </div>
+                    
+                    <div class="resend-timer" id="resendLink" style="display: none;">
+                        <a href="#" class="resend-link" id="resendOtpLink">Resend OTP</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="terms-text">
+                By continuing, I agree to the 
+                <a href="/terms-and-conditions">Terms of Service</a> & 
+                <a href="/privacy-policy">Privacy Policy</a>
+            </div>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <button class="btn-secondary" id="switchToPassword">
+                LOGIN WITH PASSWORD
+            </button>
+        </div>
+        
+        <!-- Password Login Form -->
+        <div class="login-form" id="passwordForm">
+            <form id="passwordLoginForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        Email or Phone
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="username"
+                        placeholder="Enter email or phone"
+                        required
+                    >
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Password
+                    </label>
+                    <input 
+                        type="password" 
+                        class="form-input" 
+                        id="password"
+                        placeholder="Enter password"
+                        required
+                    >
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="/forgot-password">FORGOT PASSWORD?</a>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    LOGIN
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <button class="btn-secondary" id="switchToOtp">
+                LOGIN WITH OTP
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// State management
+let loginState = {
+    requestId: null,
+    resendToken: null,
+    resendTimer: 30,
+    mobile: null,
+    countryCode: null,
+    redirectUrl: '{{ redirectUrl | default("/") }}'
+};
+
+// Tab switching
+document.querySelectorAll('.login-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const targetTab = this.dataset.tab;
+        
+        // Update active tab
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update active form
+        document.querySelectorAll('.login-form').forEach(form => form.classList.remove('active'));
+        document.getElementById(targetTab + 'Form').classList.add('active');
+    });
+});
+
+// Switch buttons
+document.getElementById('switchToPassword').addEventListener('click', function() {
+    document.querySelector('[data-tab="password"]').click();
+});
+
+document.getElementById('switchToOtp').addEventListener('click', function() {
+    document.querySelector('[data-tab="otp"]').click();
+});
+
+// OTP input handling
+const otpInputs = document.querySelectorAll('.otp-input');
+otpInputs.forEach((input, index) => {
+    input.addEventListener('keyup', function(e) {
+        if (e.key === 'Backspace') {
+            if (!this.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        } else if (this.value && index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+        }
+    });
+    
+    input.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').trim();
+        const otpArray = pastedData.split('').slice(0, 6);
+        
+        otpArray.forEach((char, i) => {
+            if (otpInputs[i]) {
+                otpInputs[i].value = char;
+            }
+        });
+    });
+});
+
+// Show/hide loading
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Show alerts
+function showAlert(message, type = 'error') {
+    const alertEl = document.getElementById(type + 'Alert');
+    alertEl.textContent = message;
+    alertEl.classList.add('show');
+    
+    setTimeout(() => {
+        alertEl.classList.remove('show');
+    }, 5000);
+}
+
+// Timer functionality
+function startResendTimer(seconds) {
+    loginState.resendTimer = seconds;
+    const timerEl = document.getElementById('timerCount');
+    const resendTimerEl = document.getElementById('resendTimer');
+    const resendLinkEl = document.getElementById('resendLink');
+    
+    resendTimerEl.style.display = 'block';
+    resendLinkEl.style.display = 'none';
+    
+    const interval = setInterval(() => {
+        loginState.resendTimer--;
+        timerEl.textContent = loginState.resendTimer;
+        
+        if (loginState.resendTimer <= 0) {
+            clearInterval(interval);
+            resendTimerEl.style.display = 'none';
+            resendLinkEl.style.display = 'block';
+        }
+    }, 1000);
+}
+
+// OTP Login Form
+document.getElementById('otpLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const mobile = document.getElementById('mobileNumber').value;
+    const countryCode = document.getElementById('countryCode').value;
+    
+    // Validation
+    if (!mobile || mobile.length < 10) {
+        document.getElementById('mobileError').textContent = 'Please enter a valid mobile number';
+        document.getElementById('mobileError').classList.add('show');
+        return;
+    }
+    
+    document.getElementById('mobileError').classList.remove('show');
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/auth/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mobile, countryCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            loginState.requestId = data.data.request_id;
+            loginState.resendToken = data.data.resend_token;
+            loginState.mobile = mobile;
+            loginState.countryCode = countryCode;
+            
+            document.getElementById('otpSection').classList.add('active');
+            document.getElementById('sendOtpBtn').disabled = true;
+            
+            startResendTimer(data.data.resend_timer || 30);
+            showAlert('OTP sent successfully!', 'success');
+        } else {
+            showAlert(data.message || 'Failed to send OTP');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+});
+
+// OTP Verification Form
+document.getElementById('otpVerifyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const otp = Array.from(otpInputs).map(input => input.value).join('');
+    
+    if (otp.length !== 6) {
+        showAlert('Please enter complete OTP');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/auth/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                requestId: loginState.requestId,
+                otp 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert('Login successful!', 'success');
+            setTimeout(() => {
+                window.location.href = loginState.redirectUrl;
+            }, 1000);
+        } else {
+            showAlert(data.message || 'Invalid OTP');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+});
+
+// Resend OTP
+document.getElementById('resendOtpLink').addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/auth/resend-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                mobile: loginState.mobile,
+                countryCode: loginState.countryCode,
+                token: loginState.resendToken
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            loginState.requestId = data.data.request_id;
+            loginState.resendToken = data.data.resend_token;
+            
+            startResendTimer(data.data.resend_timer || 30);
+            showAlert('OTP resent successfully!', 'success');
+            
+            // Clear OTP inputs
+            otpInputs.forEach(input => input.value = '');
+            otpInputs[0].focus();
+        } else {
+            showAlert(data.message || 'Failed to resend OTP');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+});
+
+// Password Login Form
+document.getElementById('passwordLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    // Clear errors
+    document.getElementById('usernameError').classList.remove('show');
+    document.getElementById('passwordError').classList.remove('show');
+    
+    // Validation
+    if (!username) {
+        document.getElementById('usernameError').textContent = 'Please enter email or phone';
+        document.getElementById('usernameError').classList.add('show');
+        return;
+    }
+    
+    if (!password) {
+        document.getElementById('passwordError').textContent = 'Please enter password';
+        document.getElementById('passwordError').classList.add('show');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/auth/login-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert('Login successful!', 'success');
+            setTimeout(() => {
+                window.location.href = loginState.redirectUrl;
+            }, 1000);
+        } else {
+            showAlert(data.message || 'Invalid credentials');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+});
+
+// Mobile number formatting
+document.getElementById('mobileNumber').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '');
+});
+</script>
+{% endblock %}

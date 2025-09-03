@@ -34,6 +34,9 @@ export interface RequestContext {
   currency?: string;
   userAgent?: string;
   ip?: string;
+  cookies?: Map<string, string>;
+  cookieString?: string;
+  responseCookies?: string[];
 }
 
 /**
@@ -44,9 +47,9 @@ class CircuitBreaker {
   private lastFailure = 0;
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
 
-  private readonly failureThreshold = 5;
+  private readonly failureThreshold = 10; // Increased from 5 to be less aggressive
   // private readonly timeoutMs = 30000; // 30 seconds
-  private readonly resetTimeoutMs = 60000; // 1 minute
+  private readonly resetTimeoutMs = 30000; // 30 seconds (reduced from 60)
 
   canExecute(): boolean {
     if (this.state === 'CLOSED') {
@@ -82,10 +85,21 @@ class CircuitBreaker {
   getState(): string {
     return this.state;
   }
+
+  reset(): void {
+    this.failures = 0;
+    this.lastFailure = 0;
+    this.state = 'CLOSED';
+  }
 }
 
 // Global circuit breaker instance
 const circuitBreaker = new CircuitBreaker();
+
+// Reset circuit breaker on startup (for development)
+if (process.env.NODE_ENV !== 'production') {
+  circuitBreaker.reset();
+}
 
 /**
  * Creates timeout link that cancels requests after specified time
@@ -183,7 +197,7 @@ const createLoggingLink = () => {
 };
 
 /**
- * Creates authentication context link
+ * Creates authentication context link with cookie forwarding
  */
 const createAuthLink = (context?: RequestContext) => {
   return setContext((_operation, { headers = {} }) => {
@@ -196,8 +210,11 @@ const createAuthLink = (context?: RequestContext) => {
         ...(context?.locale && { 'Accept-Language': context.locale }),
         ...(context?.userAgent && { 'User-Agent': context.userAgent }),
         ...(context?.traceId && { 'X-Trace-ID': context.traceId }),
+        // Forward cookies to GraphQL server
+        ...(context?.cookieString && { 'Cookie': context.cookieString }),
       },
       traceId: context?.traceId,
+      credentials: 'include', // Ensure cookies are sent and received
     };
   });
 };
@@ -268,20 +285,48 @@ const createRetryLink = () => {
 };
 
 /**
- * Creates HTTP link with fetch configuration
+ * Creates HTTP link with fetch configuration and cookie handling
  */
-const createHttpLinkWithFetch = () => {
+const createHttpLinkWithFetch = (context?: RequestContext) => {
   return createHttpLink({
     uri: Config.fyndApiUrl,
-    fetch,
+    fetch: (uri: any, options: any) => {
+      // Add cookies to the request headers if available
+      const headers = options.headers || {};
+      if (context?.cookieString) {
+        headers['Cookie'] = context.cookieString;
+      }
+      
+      return fetch(uri, {
+        ...options,
+        headers,
+        credentials: 'include', // Include cookies in requests
+      }).then(response => {
+        // Try to capture Set-Cookie headers from response (may not work in Node.js)
+        try {
+          const setCookieHeaders = response.headers.get('set-cookie');
+          if (setCookieHeaders && context) {
+            // Store response cookies in context for later use
+            if (!context.responseCookies) {
+              context.responseCookies = [];
+            }
+            context.responseCookies.push(setCookieHeaders);
+          }
+        } catch (error) {
+          // Silently ignore cookie capture errors
+        }
+        return response;
+      });
+    },
     fetchOptions: {
       timeout: Config.requestTimeout,
+      credentials: 'include',
     },
   });
 };
 
 /**
- * Creates Apollo Client instance with all links
+ * Creates Apollo Client instance with all links and cookie handling
  */
 export function createApolloClient(context?: RequestContext): ApolloClient<any> {
   // Create link chain (order matters!)
@@ -292,7 +337,7 @@ export function createApolloClient(context?: RequestContext): ApolloClient<any> 
     createTimeoutLink(Config.requestTimeout),
     createRetryLink(),
     createAuthLink(context),
-    createHttpLinkWithFetch(),
+    createHttpLinkWithFetch(context),
   ]);
 
   return new ApolloClient({
@@ -341,7 +386,7 @@ export class GraphQLClientFactory {
   }
 
   /**
-   * Executes a GraphQL operation with error handling
+   * Executes a GraphQL operation with error handling and cookie management
    */
   static async executeQuery<TData = any, TVariables extends Record<string, any> = any>(
     client: ApolloClient<any>,
@@ -355,7 +400,9 @@ export class GraphQLClientFactory {
         variables,
         context: {
           traceId: context?.traceId,
+          headers: context?.cookieString ? { Cookie: context.cookieString } : {},
         },
+        fetchPolicy: 'cache-first', // Use default cache policy
       });
 
       if (result.errors && result.errors.length > 0) {

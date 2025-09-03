@@ -63,18 +63,18 @@ export const requestLogging = (req: Request, res: Response, next: NextFunction):
  * Security headers middleware
  */
 export const securityHeaders = helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'"],
-      connectSrc: ["'self'", Config.fyndApiUrl],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
+      contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "via.placeholder.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        connectSrc: ["'self'", Config.fyndApiUrl],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+      },
     },
-  },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -181,6 +181,26 @@ export const requestContext = (req: Request, _res: Response, next: NextFunction)
   // Extract currency from query params or default
   const currency = (req.query.currency as string) || 'INR';
 
+  // Extract important cookies for session and tracking
+  const cookies = req.headers.cookie || '';
+  const importantCookies = [
+    'anonymous_id',
+    'anonymous_user_id',
+    'fc.session',
+    'cc.session',
+    'ajs_anonymous_id',
+    'ajs_user_id'
+  ];
+
+  // Parse and filter important cookies
+  const cookieMap = new Map<string, string>();
+  cookies.split(';').forEach(cookie => {
+    const [key, value] = cookie.trim().split('=');
+    if (key && importantCookies.includes(key)) {
+      cookieMap.set(key, value || '');
+    }
+  });
+
   // Add to request context
   (req as any).context = {
     traceId: req.id,
@@ -190,6 +210,8 @@ export const requestContext = (req: Request, _res: Response, next: NextFunction)
     ip: req.ip,
     isBot: /bot|crawler|spider/i.test(req.get('User-Agent') || ''),
     isMobile: /mobile/i.test(req.get('User-Agent') || ''),
+    cookies: cookieMap,
+    cookieString: Array.from(cookieMap).map(([k, v]) => `${k}=${v}`).join('; '),
   };
 
   next();

@@ -12,6 +12,7 @@ import { HttpCacheControl } from '@/lib/cache';
 import { requestLogger } from '@/lib/logger';
 import { asyncHandler, handleValidationError } from '@/middlewares/error';
 import { NotFoundError } from '@/lib/errors';
+import { handleGraphQLCookies } from '@/middlewares/cookies';
 
 /**
  * PDP route parameters schema
@@ -27,6 +28,7 @@ const pdpQuerySchema = z.object({
   variant: z.string().optional(),
   size: z.string().optional(),
   color: z.string().optional(),
+  pincode: z.string().optional(),
 });
 
 /**
@@ -35,6 +37,8 @@ const pdpQuerySchema = z.object({
 interface PDPPageData {
   product: any;
   selectedVariant?: any;
+  selectedSize?: string;
+  productPrice?: any;
   relatedProducts: any[];
   navigation: any;
   seo: {
@@ -90,6 +94,35 @@ export const pdpController = asyncHandler(
         }
       }
 
+      // Fetch product price if size is selected
+      let productPrice = null;
+      let selectedSize = queryParams.size;
+      
+      // If no size is selected but product has sizes, use the first available size
+      if (!selectedSize && product.sizes && product.sizes.size_details && product.sizes.size_details.length > 0) {
+        const firstAvailableSize = product.sizes.size_details.find((s: any) => s.is_available);
+        if (firstAvailableSize) {
+          selectedSize = firstAvailableSize.display;
+        }
+      }
+      
+      if (selectedSize) {
+        try {
+          productPrice = await CatalogService.Product.getProductPrice(
+            slug,
+            selectedSize,
+            queryParams.pincode || '',
+            context
+          );
+        } catch (priceError) {
+          logger.warn({ 
+            error: priceError, 
+            slug, 
+            size: selectedSize 
+          }, 'Failed to fetch product price for size');
+        }
+      }
+
       // Fetch related data in parallel
       const [navigation, relatedProducts] = await Promise.all([
         ContentService.Navigation.getNavigation(context),
@@ -113,6 +146,8 @@ export const pdpController = asyncHandler(
       const templateData: PDPPageData = {
         product,
         selectedVariant,
+        selectedSize,
+        productPrice,
         relatedProducts: relatedProducts.slice(0, 4), // Show 4 related products
         navigation,
         seo,
@@ -133,6 +168,9 @@ export const pdpController = asyncHandler(
         public: true,
       });
 
+      // Handle GraphQL response cookies before rendering
+      handleGraphQLCookies(req, res, () => {});
+      
       // Render PDP template
       res.render('pages/pdp', templateData);
 
@@ -184,6 +222,9 @@ export const pdpApiController = asyncHandler(
         public: true,
       });
 
+      // Handle GraphQL response cookies before sending response
+      handleGraphQLCookies(req, res, () => {});
+      
       res.json(data);
 
       logger.info('PDP API response sent');
@@ -293,3 +334,65 @@ function buildProductJsonLd(product: any, selectedVariant: any, req: Request) {
 function buildProductSchema(product: any, selectedVariant: any, req: Request) {
   return buildProductJsonLd(product, selectedVariant, req);
 }
+
+/**
+ * Product price API endpoint
+ * Fetches price for a specific product size
+ */
+export const productPriceApiController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const logger = requestLogger(req.id);
+    const context = (req as any).context;
+
+    logger.info({ params: req.params, query: req.query }, 'Fetching product price via API');
+
+    try {
+      const { slug } = pdpParamsSchema.parse(req.params);
+      const { size = '', pincode = '' } = req.query as { size?: string; pincode?: string };
+      
+      if (!size) {
+        res.status(400).json({ 
+          error: 'Size parameter is required',
+          code: 'SIZE_REQUIRED' 
+        });
+        return;
+      }
+
+      const productPrice = await CatalogService.Product.getProductPrice(
+        slug,
+        size,
+        pincode,
+        context
+      );
+
+      if (!productPrice) {
+        res.status(404).json({ 
+          error: 'Price information not available',
+          code: 'PRICE_NOT_FOUND' 
+        });
+        return;
+      }
+
+      HttpCacheControl.setHeaders(res, {
+        maxAge: 300, // 5 minutes for price data
+        public: true,
+      });
+
+      res.json({
+        success: true,
+        data: productPrice,
+        timestamp: new Date().toISOString(),
+      });
+
+      logger.info({ productSlug: slug, size }, 'Product price API response sent');
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        handleValidationError(error, 'params');
+      }
+      
+      logger.error({ err: error }, 'Failed to fetch product price');
+      throw error;
+    }
+  }
+);

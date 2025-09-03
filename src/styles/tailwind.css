@@ -4,9 +4,35 @@
  * This file imports Tailwind's base, components, and utilities
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Custom navigation components */
+.nav-tw {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.nav-tw-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #111827;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-tw-brand:hover {
+  color: #4f46e5;
+}
+
+.nav-tw-link {
+  color: #374151;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-tw-link:hover {
+  color: #4f46e5;
+}
 
 /**
  * Custom Components (without @apply for initial build)

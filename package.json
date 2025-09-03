@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:*",
     "dev:server": "tsx watch src/server.ts",
+    "dev:debug": "tsx --inspect=9229 watch src/server.ts",
+    "debug": "node --inspect=9229 -r tsx/cjs src/server.ts",
     "dev:styles": "npm-run-all --parallel dev:tailwind dev:less",
     "dev:tailwind": "node scripts/tailwind-build.js",
     "dev:less": "node scripts/less-build.js --watch",
