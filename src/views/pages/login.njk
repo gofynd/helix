@@ -441,8 +441,6 @@
                         <input type="text" class="otp-input" maxlength="1" data-index="1">
                         <input type="text" class="otp-input" maxlength="1" data-index="2">
                         <input type="text" class="otp-input" maxlength="1" data-index="3">
-                        <input type="text" class="otp-input" maxlength="1" data-index="4">
-                        <input type="text" class="otp-input" maxlength="1" data-index="5">
                     </div>
                     
                     <button type="submit" class="btn-primary" id="verifyOtpBtn">
@@ -583,7 +581,7 @@ otpInputs.forEach((input, index) => {
     input.addEventListener('paste', function(e) {
         e.preventDefault();
         const pastedData = e.clipboardData.getData('text').trim();
-        const otpArray = pastedData.split('').slice(0, 6);
+        const otpArray = pastedData.split('').slice(0, 4);
         
         otpArray.forEach((char, i) => {
             if (otpInputs[i]) {
@@ -689,7 +687,7 @@ document.getElementById('otpVerifyForm').addEventListener('submit', async functi
     
     const otp = Array.from(otpInputs).map(input => input.value).join('');
     
-    if (otp.length !== 6) {
+    if (otp.length !== 4) {
         showAlert('Please enter complete OTP');
         return;
     }

@@ -142,7 +142,7 @@ export const contactFormController = asyncHandler(
     const logger = requestLogger(req.id);
 
     try {
-      const { name, email, phone, subject, message } = req.body;
+      const { name, email, phone, subject } = req.body;
 
       logger.info({ 
         name, 

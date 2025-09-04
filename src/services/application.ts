@@ -184,7 +184,12 @@ export class ApplicationService {
    */
   static async getLanguages(context?: RequestContext): Promise<Array<{ code: string; name: string }>> {
     const config = await this.getApplicationConfiguration(context);
-    return config.languages || [{ code: 'en', name: 'English' }];
+    const languages = config.languages || [{ code: 'en', name: 'English' }];
+    
+    // Filter out any languages with missing required properties
+    return languages.filter((lang): lang is { code: string; name: string } => 
+      typeof lang.code === 'string' && typeof lang.name === 'string'
+    );
   }
 
   /**

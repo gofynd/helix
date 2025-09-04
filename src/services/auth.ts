@@ -34,7 +34,7 @@ export class AuthService {
       console.log('Sending OTP with platform ID:', PLATFORM_ID);
       console.log('Mobile:', mobile, 'Country Code:', countryCode);
       
-      const data = await GraphQLClientFactory.executeQuery(
+      const data = await GraphQLClientFactory.executeMutation(
         client,
         LOGIN_WITH_OTP,
         {
@@ -82,7 +82,7 @@ export class AuthService {
     const client = GraphQLClientFactory.createForRequest(context || {});
 
     try {
-      const data = await GraphQLClientFactory.executeQuery(
+      const data = await GraphQLClientFactory.executeMutation(
         client,
         VERIFY_OTP,
         {
@@ -114,7 +114,7 @@ export class AuthService {
     const client = GraphQLClientFactory.createForRequest(context || {});
 
     try {
-      const data = await GraphQLClientFactory.executeQuery(
+      const data = await GraphQLClientFactory.executeMutation(
         client,
         RESEND_OTP_ON_MOBILE,
         {
@@ -147,7 +147,7 @@ export class AuthService {
     const client = GraphQLClientFactory.createForRequest(context || {});
 
     try {
-      const data = await GraphQLClientFactory.executeQuery(
+      const data = await GraphQLClientFactory.executeMutation(
         client,
         LOGIN_WITH_EMAIL_PASSWORD,
         {
@@ -173,7 +173,7 @@ export class AuthService {
     const client = GraphQLClientFactory.createForRequest(context || {});
 
     try {
-      const data = await GraphQLClientFactory.executeQuery(
+      const data = await GraphQLClientFactory.executeMutation(
         client,
         LOGOUT,
         {},
@@ -220,10 +220,10 @@ export class AuthService {
    * Get user profile details
    * This method returns the current user data with additional profile information
    */
-  static async getUserProfile(context: RequestContext, userId: string): Promise<any> {
+  static async getUserProfile(_context: RequestContext, userId: string): Promise<any> {
     // For now, we'll use getCurrentUser as the profile data
     // In a real implementation, this would fetch more detailed profile data
-    const user = await this.getCurrentUser(context);
+    const user = await this.getCurrentUser(_context);
     
     if (user && user.id === userId) {
       return {
@@ -243,7 +243,7 @@ export class AuthService {
    * In a real implementation, this would call a GraphQL mutation
    */
   static async updateUserProfile(
-    context: RequestContext,
+    _context: RequestContext,
     userId: string,
     profileData: {
       name?: string;

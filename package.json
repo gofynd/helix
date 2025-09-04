@@ -4,12 +4,12 @@
   "description": "Production-ready Express SSR storefront powered by Fynd Platform Storefront GraphQL",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "npm-run-all --parallel dev:*",
-    "dev:server": "tsx watch src/server.ts",
-    "dev:debug": "tsx --inspect=9229 watch src/server.ts",
+    "dev": "npm-run-all --parallel dev:server dev:styles",
+    "dev:server": "tsx --watch src/server.ts",
+    "dev:debug": "tsx --inspect=9229 --watch src/server.ts",
     "debug": "node --inspect=9229 -r tsx/cjs src/server.ts",
     "dev:styles": "npm-run-all --parallel dev:tailwind dev:less",
-    "dev:tailwind": "node scripts/tailwind-build.js",
+    "dev:tailwind": "node scripts/tailwind-build.js --watch",
     "dev:less": "node scripts/less-build.js --watch",
     "build": "npm-run-all build:tailwind build:ts build:styles build:optimize",
     "build:tailwind": "NODE_ENV=production node scripts/tailwind-build.js",
@@ -28,7 +28,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "kill-port": "node scripts/kill-port.js",
+    "cleanup": "node scripts/kill-port.js 3000"
   },
   "keywords": [
     "fynd",

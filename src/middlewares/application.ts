@@ -70,7 +70,7 @@ export async function applicationConfigMiddleware(
  * This can be called via an admin endpoint when configuration is updated
  */
 export function refreshApplicationConfig(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ): void {

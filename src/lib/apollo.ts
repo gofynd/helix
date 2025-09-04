@@ -17,6 +17,7 @@ import {
   ApolloLink,
   Observable,
 } from '@apollo/client/core';
+import { map } from 'rxjs/operators';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
@@ -145,14 +146,16 @@ const createCircuitBreakerLink = () => {
       });
     }
 
-    return forward(operation).map((result) => {
-      if (result.errors && result.errors.length > 0) {
-        circuitBreaker.onFailure();
-      } else {
-        circuitBreaker.onSuccess();
-      }
-      return result;
-    });
+    return forward(operation).pipe(
+      map((result) => {
+        if (result.errors && result.errors.length > 0) {
+          circuitBreaker.onFailure();
+        } else {
+          circuitBreaker.onSuccess();
+        }
+        return result;
+      })
+    );
   });
 };
 
@@ -169,30 +172,32 @@ const createLoggingLink = () => {
       traceId
     );
 
-    return forward(operation).map((result) => {
-      const duration = timer.end({
-        cacheHit: false, // Will be updated by cache link if applicable
-        hasErrors: result.errors && result.errors.length > 0,
-      });
+    return forward(operation).pipe(
+      map((result) => {
+        const duration = timer.end({
+          cacheHit: false, // Will be updated by cache link if applicable
+          hasErrors: result.errors && result.errors.length > 0,
+        });
 
-      if (result.errors && result.errors.length > 0) {
-        GraphQLLogger.error(
-          operation.operationName || 'UnknownOperation',
-          new Error(`GraphQL errors: ${result.errors.map(e => e.message).join(', ')}`),
-          duration,
-          traceId
-        );
-      } else {
-        GraphQLLogger.success(
-          operation.operationName || 'UnknownOperation',
-          duration,
-          false,
-          traceId
-        );
-      }
+        if (result.errors && result.errors.length > 0) {
+          GraphQLLogger.error(
+            operation.operationName || 'UnknownOperation',
+            new Error(`GraphQL errors: ${result.errors.map((e: any) => e.message).join(', ')}`),
+            duration,
+            traceId
+          );
+        } else {
+          GraphQLLogger.success(
+            operation.operationName || 'UnknownOperation',
+            duration,
+            false,
+            traceId
+          );
+        }
 
-      return result;
-    });
+        return result;
+      })
+    );
   });
 };
 
@@ -223,13 +228,13 @@ const createAuthLink = (context?: RequestContext) => {
  * Creates error handling link
  */
 const createErrorLink = () => {
-  return onError(({ graphQLErrors, networkError, operation }) => {
+  return onError(({ graphQLErrors, networkError, operation }: any) => {
     const context = operation.getContext();
     const traceId = context.traceId;
     const operationName = operation.operationName;
 
     if (graphQLErrors) {
-      graphQLErrors.forEach((error) => {
+      graphQLErrors.forEach((error: any) => {
         GraphQLLogger.error(
           operationName || 'UnknownOperation',
           new Error(`GraphQL error: ${error.message}`),
@@ -266,8 +271,8 @@ const createRetryLink = () => {
       max: Config.maxRetries,
       retryIf: (error, _operation) => {
         // Only retry on network errors or 5xx server errors
-        if (error.networkError) {
-          const networkError = error.networkError as any;
+        if ((error as any).networkError) {
+          const networkError = (error as any).networkError as any;
           
           // Don't retry on client errors (4xx)
           if (networkError.statusCode && networkError.statusCode < 500) {
@@ -319,7 +324,7 @@ const createHttpLinkWithFetch = (context?: RequestContext) => {
       });
     },
     fetchOptions: {
-      timeout: Config.requestTimeout,
+      // timeout: Config.requestTimeout, // Remove timeout from fetchOptions as it's not standard
       credentials: 'include',
     },
   });
@@ -328,7 +333,7 @@ const createHttpLinkWithFetch = (context?: RequestContext) => {
 /**
  * Creates Apollo Client instance with all links and cookie handling
  */
-export function createApolloClient(context?: RequestContext): ApolloClient<any> {
+export function createApolloClient(context?: RequestContext): ApolloClient {
   // Create link chain (order matters!)
   const link = from([
     createLoggingLink(),
@@ -374,28 +379,28 @@ export class GraphQLClientFactory {
   /**
    * Creates a request-scoped Apollo client
    */
-  static createForRequest(context: RequestContext): ApolloClient<any> {
+  static createForRequest(context: RequestContext): ApolloClient {
     return createApolloClient(context);
   }
 
   /**
    * Creates a default client (for background tasks, etc.)
    */
-  static createDefault(): ApolloClient<any> {
+  static createDefault(): ApolloClient {
     return createApolloClient();
   }
 
   /**
-   * Executes a GraphQL operation with error handling and cookie management
+   * Executes a GraphQL query with error handling and cookie management
    */
   static async executeQuery<TData = any, TVariables extends Record<string, any> = any>(
-    client: ApolloClient<any>,
+    client: ApolloClient,
     query: any,
     variables?: TVariables,
     context?: RequestContext
   ): Promise<TData> {
     try {
-      const result = await client.query<TData, TVariables>({
+      const result = await client.query({
         query,
         variables,
         context: {
@@ -405,12 +410,14 @@ export class GraphQLClientFactory {
         fetchPolicy: 'cache-first', // Use default cache policy
       });
 
-      if (result.errors && result.errors.length > 0) {
+      // In Apollo Client v4, errors are in the error property, not errors array
+      if (result.error) {
         // Map GraphQL errors to application errors
+        const error = result.error as any;
         const apolloError = {
-          graphQLErrors: result.errors,
-          networkError: null,
-          message: result.errors[0].message,
+          graphQLErrors: error.graphQLErrors || [],
+          networkError: error.networkError || null,
+          message: error.message,
           extraInfo: {},
         } as any;
 
@@ -421,13 +428,75 @@ export class GraphQLClientFactory {
         );
       }
 
-      return result.data;
+      // Ensure we have data
+      if (!result.data) {
+        throw new Error('No data returned from GraphQL query');
+      }
+
+      return result.data as TData;
     } catch (error: any) {
       // Map Apollo errors to application errors
-      if (error.name === 'ApolloError') {
+      if (error.name === 'ApolloError' || error.graphQLErrors || error.networkError) {
         throw GraphQLErrorMapper.mapApolloError(
           error,
           query.definitions[0]?.name?.value,
+          context?.traceId
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Executes a GraphQL mutation with error handling and cookie management
+   */
+  static async executeMutation<TData = any, TVariables extends Record<string, any> = any>(
+    client: ApolloClient,
+    mutation: any,
+    variables?: TVariables,
+    context?: RequestContext
+  ): Promise<TData> {
+    try {
+      const result = await client.mutate({
+        mutation,
+        variables,
+        context: {
+          traceId: context?.traceId,
+          headers: context?.cookieString ? { Cookie: context.cookieString } : {},
+        },
+      });
+
+      // In Apollo Client v4, errors are in the error property, not errors array
+      if (result.error) {
+        // Map GraphQL errors to application errors
+        const error = result.error as any;
+        const apolloError = {
+          graphQLErrors: error.graphQLErrors || [],
+          networkError: error.networkError || null,
+          message: error.message,
+          extraInfo: {},
+        } as any;
+
+        throw GraphQLErrorMapper.mapApolloError(
+          apolloError,
+          mutation.definitions[0]?.name?.value,
+          context?.traceId
+        );
+      }
+
+      // Ensure we have data
+      if (!result.data) {
+        throw new Error('No data returned from GraphQL mutation');
+      }
+
+      return result.data as TData;
+    } catch (error: any) {
+      // Map Apollo errors to application errors
+      if (error.name === 'ApolloError' || error.graphQLErrors || error.networkError) {
+        throw GraphQLErrorMapper.mapApolloError(
+          error,
+          mutation.definitions[0]?.name?.value,
           context?.traceId
         );
       }

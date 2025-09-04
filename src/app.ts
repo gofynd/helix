@@ -22,7 +22,7 @@ import {
   requestContext,
   healthCheck,
 } from './middlewares/request';
-import { errorHandler, notFoundHandler } from './middlewares/error';
+import { errorHandler } from './middlewares/error';
 import { ignoreRoutesMiddleware, custom404Handler } from './middlewares/ignore-routes';
 import { applicationConfigMiddleware } from './middlewares/application';
 import { cookieForwardingMiddleware } from './middlewares/cookies';

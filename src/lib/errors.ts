@@ -9,7 +9,14 @@
  */
 
 // import { GraphQLError } from 'graphql';
-import { ApolloError } from '@apollo/client/core';
+// ApolloError is not exported from @apollo/client/core in v4
+// We'll define the interface we need locally
+interface ApolloErrorLike {
+  message: string;
+  graphQLErrors?: any[];
+  networkError?: any;
+  extraInfo?: any;
+}
 
 /**
  * Base application error with structured properties
@@ -219,7 +226,7 @@ export class GraphQLErrorMapper {
    * Maps ApolloError to appropriate AppError instance
    */
   static mapApolloError(
-    error: ApolloError,
+    error: ApolloErrorLike,
     operationName?: string,
     traceId?: string
   ): AppError {
@@ -295,7 +302,7 @@ export class GraphQLErrorMapper {
     }
 
     // GraphQL errors (validation, execution, etc.)
-    if (error.graphQLErrors?.length > 0) {
+    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
       const graphQLError = error.graphQLErrors[0];
       
       return this.mapGraphQLError(graphQLError, context, traceId);

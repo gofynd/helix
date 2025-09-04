@@ -38,15 +38,16 @@ export const LOGIN_WITH_OTP = gql`
  * Verify OTP to complete login
  */
 export const VERIFY_OTP = gql`
-  mutation verifyOTP(
+  mutation verifyMobileOTP(
     $platform: String
     $verifyOtpRequestSchemaInput: VerifyOtpRequestSchemaInput
   ) {
-    verifyOTP(
+    verifyMobileOTP(
       platform: $platform
       verifyOtpRequestSchemaInput: $verifyOtpRequestSchemaInput
     ) {
       register_token
+      user_exists
       user {
         id
         account_type
@@ -62,8 +63,6 @@ export const VERIFY_OTP = gql`
         updated_at
         user_id
         username
-        external_id
-        rr_id
         emails {
           active
           email

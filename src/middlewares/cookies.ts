@@ -103,7 +103,7 @@ export const handleGraphQLCookies = (req: Request, res: Response, next: NextFunc
  * Express middleware to ensure cookies are properly forwarded
  * This should be added early in the middleware chain
  */
-export const cookieForwardingMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+export const cookieForwardingMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
   // Ensure cookie parser has run
   if (!req.headers.cookie) {
     next();

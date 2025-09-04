@@ -151,11 +151,21 @@ async function watch() {
     await compileLess();
   });
   
-  // Handle graceful shutdown
-  process.on('SIGINT', () => {
-    console.log('\nStopping LESS watcher...');
+  // Handle graceful shutdown for multiple signals
+  const shutdown = (signal) => {
+    console.log(`\nReceived ${signal}, stopping LESS watcher...`);
     watcher.close();
-    process.exit(0);
+    setTimeout(() => {
+      process.exit(0);
+    }, 1000);
+  };
+  
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('exit', () => {
+    if (watcher) {
+      watcher.close();
+    }
   });
 }
 

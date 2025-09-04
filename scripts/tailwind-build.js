@@ -50,9 +50,22 @@ async function build() {
         process.exit(1);
       });
       
-      process.on('SIGINT', () => {
-        child.kill('SIGINT');
-        process.exit(0);
+      // Handle graceful shutdown for multiple signals
+      const shutdown = (signal) => {
+        console.log(`\nReceived ${signal}, stopping Tailwind build...`);
+        child.kill(signal);
+        setTimeout(() => {
+          child.kill('SIGKILL');
+          process.exit(0);
+        }, 5000);
+      };
+      
+      process.on('SIGINT', () => shutdown('SIGINT'));
+      process.on('SIGTERM', () => shutdown('SIGTERM'));
+      process.on('exit', () => {
+        if (!child.killed) {
+          child.kill('SIGTERM');
+        }
       });
     } else {
       // For single build, use exec
