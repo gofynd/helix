@@ -95,6 +95,11 @@ export class AuthService {
         context
       );
 
+      if (!data || !data.verifyOTP) {
+        console.error('Invalid GraphQL response for verifyOTP:', data);
+        return null;
+      }
+
       return data.verifyOTP;
     } catch (error) {
       console.error('Failed to verify OTP:', error);

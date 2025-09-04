@@ -146,6 +146,14 @@ export const verifyOTPController = asyncHandler(
 
       const result = await AuthService.verifyOTP(requestId, otp, context);
 
+      if (!result) {
+        res.status(400).json({
+          success: false,
+          message: 'Failed to verify OTP. Please try again.',
+        });
+        return;
+      }
+
       if (result.user) {
         // Set user session or token (you may want to implement JWT here)
         (req as any).session = (req as any).session || {};

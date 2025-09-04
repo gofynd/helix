@@ -14,6 +14,20 @@ export default [
       'boundaries': boundariesPlugin,
     },
     languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        global: 'readonly',
+        URLSearchParams: 'readonly',
+      },
       parser: tsparser,
       parserOptions: {
         ecmaVersion: 2022,
@@ -104,6 +118,9 @@ export default [
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
+        node: {
+          extensions: ['.js', '.ts'],
+        },
       },
       'boundaries/elements': [
         {
@@ -131,6 +148,34 @@ export default [
           pattern: 'src/graphql/**/*',
         },
       ],
+    },
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        global: 'readonly',
+      },
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        // No project for test files to avoid parsing errors
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
     },
   },
   {
