@@ -16,7 +16,7 @@ import { asyncHandler, handleValidationError } from '@/middlewares/error';
  * PLP query parameters schema
  */
 const plpQuerySchema = z.object({
-  search: z.string().optional(),
+  q: z.string().optional(),
   f: z.string().optional(),
   sortOn: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -64,8 +64,8 @@ export const plpController = asyncHandler(
       // Fetch data in parallel
       const [productsData, navigation] = await Promise.all([
         // Search or list products based on query
-        params.search 
-          ? CatalogService.Product.searchProducts(params.search, {
+        params.q
+          ? CatalogService.Product.searchProducts(params.q, {
               f: params.f,
               filters: params.filters,
               sortOn: params.sortOn,
@@ -73,7 +73,7 @@ export const plpController = asyncHandler(
               pageNo: params.page,
             }, context)
           : CatalogService.Product.getProducts({
-              search: params.search,
+              search: params.q,
               f: params.f,
               filters: params.filters,
               sortOn: params.sortOn,
@@ -87,7 +87,7 @@ export const plpController = asyncHandler(
       const currentFilters = parseFilters(params.f);
 
       // Build breadcrumbs
-      const breadcrumbs = buildBreadcrumbs(params.search, currentFilters);
+      const breadcrumbs = buildBreadcrumbs(params.q, currentFilters);
 
       // Prepare SEO data
       const seo = buildSEO(params, productsData, req);
@@ -98,7 +98,7 @@ export const plpController = asyncHandler(
         filters: productsData?.filters || [],
         sortOptions: productsData?.sort_on || [],
         pagination: productsData?.page || {},
-        searchQuery: params.search,
+        searchQuery: params.q,
         currentFilters,
         navigation,
         seo,
@@ -124,7 +124,7 @@ export const plpController = asyncHandler(
         totalProducts: productsData?.page?.item_total || 0,
         filtersCount: productsData?.filters?.length || 0,
         currentPage: params.page,
-        searchQuery: params.search,
+        searchQuery: params.q,
       }, 'PLP rendered successfully');
 
     } catch (error) {
@@ -151,8 +151,8 @@ export const plpApiController = asyncHandler(
     try {
       const params = plpQuerySchema.parse(req.query);
       
-      const productsData = params.search 
-        ? await CatalogService.Product.searchProducts(params.search, {
+      const productsData = params.q 
+        ? await CatalogService.Product.searchProducts(params.q, {
             f: params.f,
             filters: params.filters,
             sortOn: params.sortOn,
@@ -160,7 +160,7 @@ export const plpApiController = asyncHandler(
             pageNo: params.page,
           }, context)
         : await CatalogService.Product.getProducts({
-            search: params.search,
+            search: params.q,
             f: params.f,
             filters: params.filters,
             sortOn: params.sortOn,
@@ -171,7 +171,7 @@ export const plpApiController = asyncHandler(
       const data = {
         ...productsData,
         currentFilters: parseFilters(params.f),
-        searchQuery: params.search,
+        searchQuery: params.q,
         timestamp: new Date().toISOString(),
       };
 
@@ -276,9 +276,9 @@ function buildSEO(
   let title = baseTitle;
   let description = `Discover ${totalProducts} amazing products at great prices.`;
 
-  if (params.search) {
-    title = `Search: "${params.search}" - ${totalProducts} Results`;
-    description = `Found ${totalProducts} products for "${params.search}". Shop now for the best deals.`;
+  if (params.q) {
+    title = `Search: "${params.q}" - ${totalProducts} Results`;
+    description = `Found ${totalProducts} products for "${params.q}". Shop now for the best deals.`;
   }
 
   return {

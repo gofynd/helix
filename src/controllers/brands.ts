@@ -17,7 +17,7 @@ import { asyncHandler, handleValidationError } from '@/middlewares/error';
  */
 const brandsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
-  search: z.string().optional(),
+  q: z.string().optional(),
 });
 
 /**
@@ -63,7 +63,7 @@ export const brandsController = asyncHandler(
       ]);
 
       // Build breadcrumbs
-      const breadcrumbs = buildBreadcrumbs(params.search);
+      const breadcrumbs = buildBreadcrumbs(params.q);
 
       // Prepare SEO data
       const seo = buildSEO(params, brandsData, req);
@@ -72,7 +72,7 @@ export const brandsController = asyncHandler(
       const templateData: BrandsPageData = {
         brands: brandsData?.items || [],
         pagination: brandsData?.page || {},
-        searchQuery: params.search,
+        searchQuery: params.q,
         navigation,
         seo,
         breadcrumbs,
@@ -124,7 +124,7 @@ export const brandsApiController = asyncHandler(
 
       const data = {
         ...brandsData,
-        searchQuery: params.search,
+        searchQuery: params.q,
         timestamp: new Date().toISOString(),
       };
 
@@ -160,7 +160,7 @@ function buildBreadcrumbs(searchQuery?: string): Array<{ name: string; url: stri
   if (searchQuery) {
     breadcrumbs.push({
       name: `Search: "${searchQuery}"`,
-      url: `/brands?search=${encodeURIComponent(searchQuery)}`
+      url: `/brands?q=${encodeURIComponent(searchQuery)}`
     });
   }
 
@@ -171,7 +171,7 @@ function buildBreadcrumbs(searchQuery?: string): Array<{ name: string; url: stri
  * Build SEO data for brands page
  */
 function buildSEO(
-  params: { page: number; search?: string },
+  params: { page: number; q?: string },
   brandsData: any,
   req: Request
 ): { title: string; description: string; canonical: string } {
@@ -180,9 +180,9 @@ function buildSEO(
   let title = `Brands - Page ${params.page}`;
   let description = `Discover ${totalBrands} amazing brands. Shop from your favorite brands and discover new ones.`;
 
-  if (params.search) {
-    title = `Search: "${params.search}" - Brands`;
-    description = `Found brands matching "${params.search}". Discover products from your favorite brands.`;
+  if (params.q) {
+    title = `Search: "${params.q}" - Brands`;
+    description = `Found brands matching "${params.q}". Discover products from your favorite brands.`;
   }
 
   const canonical = `${req.protocol}://${req.get('host')}${req.path}`;

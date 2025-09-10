@@ -5,7 +5,11 @@
             {# Logo #}
             <div class="flex-shrink-0">
                 <a href="/" class="nav-tw-brand" aria-label="{{ store.name }} Home">
-                    <img src="/static/images/logo.svg" alt="{{ store.name }}" class="h-8 w-auto">
+                    {% if store.logo and store.logo.url %}
+                        <img src="{{ store.logo.url }}" alt="{{ store.logo.alt | default(store.name) }}" class="h-8 w-auto">
+                    {% else %}
+                        <img src="/static/images/logo.svg" alt="{{ store.name }}" class="h-8 w-auto">
+                    {% endif %}
                 </a>
             </div>
             
@@ -17,7 +21,7 @@
                         <input 
                             type="search" 
                             id="search-input"
-                            name="search" 
+                            name="q" 
                             class="w-full px-4 py-2 pr-10 text-gray-900 bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200" 
                             placeholder="Search products..." 
                             value="{{ searchQuery | default('') }}"
@@ -40,12 +44,12 @@
             {# Navigation Menu - Desktop #}
             <nav class="hidden lg:flex flex-1 justify-center" role="navigation" aria-label="Main navigation">
                 <div class="flex space-x-8">
-                    <a href="/products" class="nav-tw-link">Products</a>
-                    <a href="/categories" class="nav-tw-link">Categories</a>
-                    <a href="/brands" class="nav-tw-link">Brands</a>
+                    <a href="/products" class="nav-tw-link px-3 py-2">Products</a>
+                    <a href="/categories" class="nav-tw-link px-3 py-2">Categories</a>
+                    <a href="/brands" class="nav-tw-link px-3 py-2">Brands</a>
                     {% if navigation and navigation.items %}
                     {% for item in navigation.items %}
-                        <a href="{{ item.action.page.url | default('#') }}" class="nav-tw-link">
+                        <a href="{{ item.action.page.url | default('#') }}" class="nav-tw-link px-3 py-2">
                             {{ item.display }}
                         </a>
                     {% endfor %}

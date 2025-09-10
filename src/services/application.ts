@@ -43,6 +43,10 @@ export interface ApplicationConfiguration {
     name?: string;
     company_id?: number;
     slug?: string;
+    logo?: {
+      url?: string;
+      alt?: string;
+    };
   };
   contact_info?: {
     id?: string;

@@ -7,7 +7,11 @@
                 {# Company Info #}
                 <div class="footer__section">
                     <div class="footer__logo">
-                        <img src="/static/images/logo.svg" alt="{{ store.name }}" class="footer__logo-image">
+                        {% if store.logo and store.logo.url %}
+                            <img src="{{ store.logo.url }}" alt="{{ store.logo.alt | default(store.name) }}" class="footer__logo-image">
+                        {% else %}
+                            <img src="/static/images/logo.svg" alt="{{ store.name }}" class="footer__logo-image">
+                        {% endif %}
                     </div>
                     <p class="footer__description">
                         {% if store.description %}

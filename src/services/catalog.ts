@@ -15,7 +15,6 @@ import {
   GET_COLLECTION,
   GET_COLLECTION_PRODUCTS,
   GET_BRANDS,
-  SEARCH_PRODUCTS,
 } from '@/graphql/queries/catalog';
 
 /**
@@ -104,11 +103,11 @@ export class ProductService {
       async () => {
         const data = await GraphQLClientFactory.executeQuery(
           client,
-          SEARCH_PRODUCTS,
+          GET_PRODUCTS,
           { search: query, ...params },
           context
         );
-        return data.searchProducts;
+        return data.products;
       },
       Config.cacheTtl / 2, // Shorter cache for search results
       context?.traceId

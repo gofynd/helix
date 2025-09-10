@@ -146,7 +146,7 @@ export const verifyOTPController = asyncHandler(
 
       const result = await AuthService.verifyOTP(requestId, otp, context);
 
-      if (!result) {
+      if (!result || (result.user_exists === false && !result.register_token)) {
         res.status(400).json({
           success: false,
           message: 'Failed to verify OTP. Please try again.',
@@ -170,6 +170,7 @@ export const verifyOTPController = asyncHandler(
         data: {
           user: result.user,
           token: result.register_token,
+          user_exists: result.user_exists,
         },
       });
 

@@ -43,6 +43,7 @@ export async function applicationConfigMiddleware(
       // Add more commonly accessed properties here
       slug: appConfig.basic_details?.slug || appConfig.app_details?.slug || '',
       companyId: appConfig.basic_details?.company_id || appConfig.app_details?.company_id || null,
+      logo: appConfig.basic_details?.logo || null,
     };
 
     next();
@@ -59,6 +60,7 @@ export async function applicationConfigMiddleware(
       isActive: true,
       slug: '',
       companyId: null,
+      logo: null,
     };
     
     next();

@@ -83,7 +83,7 @@
             
             <div class="flex items-center space-x-4">
                 {% if pagination.has_previous %}
-                <a href="?page={{ pagination.current - 1 }}{{ ('&search=' + searchQuery) if searchQuery else '' }}" 
+                <a href="?page={{ pagination.current - 1 }}{{ ('&q=' + searchQuery) if searchQuery else '' }}" 
                    class="btn-tw-outline">
                     ← Previous
                 </a>
@@ -92,7 +92,7 @@
                 <span class="px-4 py-2 text-sm font-medium text-gray-700">Page {{ pagination.current }}</span>
                 
                 {% if pagination.has_next %}
-                <a href="?page={{ pagination.current + 1 }}{{ ('&search=' + searchQuery) if searchQuery else '' }}" 
+                <a href="?page={{ pagination.current + 1 }}{{ ('&q=' + searchQuery) if searchQuery else '' }}" 
                    class="btn-tw-primary">
                     Next →
                 </a>

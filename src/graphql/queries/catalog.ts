@@ -255,22 +255,6 @@ export const GET_COLLECTION_PRODUCTS = gql`
 `;
 
 /**
- * Search products - minimal version
- */
-export const SEARCH_PRODUCTS = gql`
-  query SearchProducts($query: String!) {
-    searchProduct(query: $query) {
-      items {
-        type
-        action {
-          type
-        }
-      }
-    }
-  }
-`;
-
-/**
  * Get product price by size - for dynamic pricing on PDP
  * Fetches size-specific pricing information including discounts, delivery promise, etc.
  */
@@ -396,6 +380,10 @@ export const GET_APPLICATION_CONFIGURATION = gql`
         name
         company_id
         slug
+        logo {
+          url
+          alt
+        }
       }
       contact_info {
         id
