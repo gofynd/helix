@@ -1,0 +1,25 @@
+name = "helix"
+main = "src/cf-worker.js"
+compatibility_date = "2025-09-09"
+
+[observability]
+logs = { enabled = true }
+
+[[containers]]
+max_instances = 2
+class_name = "MyContainer"
+image = "./Dockerfile"   # Wrangler builds locally and pushes to CF registry
+
+[[durable_objects.bindings]]
+name = "MY_CONTAINER"
+class_name = "MyContainer"
+
+[env.production.vars]
+NODE_ENV = "production"
+PORT = "8080"
+HOST = "0.0.0.0"
+
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MyContainer"]
