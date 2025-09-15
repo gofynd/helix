@@ -10,7 +10,6 @@ on:
 env:
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  # If you use this in health checks, surface it here too:
   CLOUDFLARE_SUBDOMAIN: ${{ secrets.CLOUDFLARE_SUBDOMAIN }}
 
 concurrency:
@@ -34,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'      
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -44,26 +43,16 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npm test
 
-      # Optional: build your docker image (if your project needs this artifact)
+      # Optional: build your docker image (keep if you actually use it)
       - name: Build Docker image
-        run: |
-          docker build -t ${{ github.repository }}:${{ github.sha }} .
+        run: docker build -t ${{ github.repository }}:${{ github.sha }} .
 
-      # ✅ Recommended: use the official Wrangler action (no auth/login commands needed)
-      - name: Deploy with Wrangler action
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # wrangler.toml is auto-detected; add options if needed:
-          command: deploy
-
-      # --- OR (alternative) use npx directly. Keep ONE of the two deploy steps above/below. ---
-      # - name: Deploy with npx (alternative)
-      #   run: npx wrangler@^3 deploy --account-id "$CLOUDFLARE_ACCOUNT_ID" --compatibility-date $(date +%Y-%m-%d)
-      #   env:
-      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # Deploy with Wrangler CLI v4 via npx
+      - name: Deploy with npx Wrangler v4
+        run: npx wrangler@^4 deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Verify deployment
         run: |
