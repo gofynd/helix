@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Containers
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/cf-container/improvements ]
   pull_request:
     branches: [ main ]
 
