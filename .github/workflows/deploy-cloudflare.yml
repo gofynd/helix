@@ -56,7 +56,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # wrangler.toml is auto-detected; add options if needed:
-          command: deploy --compatibility-date $(date +%Y-%m-%d)
+          command: deploy
 
       # --- OR (alternative) use npx directly. Keep ONE of the two deploy steps above/below. ---
       # - name: Deploy with npx (alternative)
