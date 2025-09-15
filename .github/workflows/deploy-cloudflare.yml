@@ -6,143 +6,134 @@ on:
   pull_request:
     branches: [ main ]
 
+# Global env (available to all jobs)
 env:
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  # If you use this in health checks, surface it here too:
+  CLOUDFLARE_SUBDOMAIN: ${{ secrets.CLOUDFLARE_SUBDOMAIN }}
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
       name: CloudFlare Containers deployment
-    
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'      
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      run: npm test
-      if: github.event_name == 'pull_request'
+      - name: Run tests (PRs only)
+        if: github.event_name == 'pull_request'
+        run: npm test
 
-    - name: Install Wrangler CLI
-      run: npm install -g wrangler
+      # Optional: build your docker image (if your project needs this artifact)
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ github.repository }}:${{ github.sha }} .
 
-    - name: Login to Cloudflare
-      run: npx wrangler auth login --api-token ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # ✅ Recommended: use the official Wrangler action (no auth/login commands needed)
+      - name: Deploy with Wrangler action
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # wrangler.toml is auto-detected; add options if needed:
+          command: deploy --compatibility-date $(date +%Y-%m-%d)
 
-    - name: Build Docker image
-      run: |
-        docker build -t ${{ github.repository }}:${{ github.sha }} .
+      # --- OR (alternative) use npx directly. Keep ONE of the two deploy steps above/below. ---
+      # - name: Deploy with npx (alternative)
+      #   run: npx wrangler@^3 deploy --account-id "$CLOUDFLARE_ACCOUNT_ID" --compatibility-date $(date +%Y-%m-%d)
+      #   env:
+      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-    - name: Deploy to Cloudflare
-      run: |
-        npx wrangler deploy --compatibility-date $(date +%Y-%m-%d)
-      env:
-        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Verify deployment
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+          BASE="https://${{ github.event.repository.name }}.${{ env.CLOUDFLARE_SUBDOMAIN }}.workers.dev"
+          curl -f "$BASE/__worker_ok"
+          curl -f "$BASE/health"
 
-    - name: Verify deployment
-      run: |
-        # Wait for deployment to be ready
-        sleep 30
-        
-        # Test worker health
-        curl -f https://${{ github.event.repository.name }}.${{ secrets.CLOUDFLARE_SUBDOMAIN }}.workers.dev/__worker_ok || exit 1
-        
-        # Test container health
-        curl -f https://${{ github.event.repository.name }}.${{ secrets.CLOUDFLARE_SUBDOMAIN }}.workers.dev/health || exit 1
-
-    - name: Comment deployment status
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            issue_number: context.issue.number,
-          });
-          
-          const botComment = comments.find(comment => 
-            comment.user.type === 'Bot' && 
-            comment.body.includes('🚀 Cloudflare Deployment Status')
-          );
-          
-          const commentBody = `🚀 **Cloudflare Deployment Status**
-          
-          ✅ **Deployment Successful**
-          - Worker URL: https://${{ github.event.repository.name }}.${{ secrets.CLOUDFLARE_SUBDOMAIN }}.workers.dev
-          - Commit: \`${{ github.sha }}\`
-          - Branch: \`${{ github.ref_name }}\`
-          - Status: All health checks passed
-          
-          🔍 **Test Endpoints:**
-          - Worker Health: \`/__worker_ok\`
-          - Container Health: \`/health\`
-          - Main App: \`/\``;
-          
-          if (botComment) {
-            await github.rest.issues.updateComment({
+      - name: Comment deployment status (PRs only)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
+              repo: context.repo.repo,
               issue_number: context.issue.number,
-              comment_id: botComment.id,
-              body: commentBody
             });
-          } else {
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              issue_number: context.issue.number,
-              body: commentBody
-            });
-          }
+
+            const body = `🚀 **Cloudflare Deployment Status**
+            
+            ✅ **Deployment Successful**
+            - Worker URL: https://${{ github.event.repository.name }}.${{ env.CLOUDFLARE_SUBDOMAIN }}.workers.dev
+            - Commit: \`${{ github.sha }}\`
+            - Branch: \`${{ github.ref_name }}\`
+            - Status: All health checks passed
+
+            🔍 **Test Endpoints:**
+            - Worker Health: \`/__worker_ok\`
+            - Container Health: \`/health\`
+            - Main App: \`/\``;
+
+            const botComment = comments.find(c =>
+              c.user?.type === 'Bot' && c.body?.includes('🚀 Cloudflare Deployment Status')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }
 
   security-scan:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  # notify:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-deploy]
-  #   if: always() && github.ref == 'refs/heads/main'
-    
-  #   steps:
-  #   - name: Notify deployment status
-  #     uses: 8398a7/action-slack@v3
-  #     if: always()
-  #     with:
-  #       status: ${{ job.status }}
-  #       channel: '#deployments'
-  #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #       fields: repo,message,commit,author,action,eventName,ref,workflow
-  #       text: |
-  #         🚀 Cloudflare Container Deployment
-  #         Status: ${{ job.status }}
-  #         Repository: ${{ github.repository }}
-  #         Branch: ${{ github.ref_name }}
-  #         Commit: ${{ github.sha }}
-  #         Author: ${{ github.actor }}
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
