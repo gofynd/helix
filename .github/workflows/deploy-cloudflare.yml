@@ -13,6 +13,8 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: CloudFlare Containers deployment
     
     steps:
     - name: Checkout code
