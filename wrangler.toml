@@ -1,4 +1,4 @@
-name = "gh-helix"
+name = "helix"
 main = "src/cf-worker.js"
 compatibility_date = "2025-09-09"
 
