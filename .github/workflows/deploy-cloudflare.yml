@@ -43,10 +43,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npm test
 
-      # Optional: build your docker image (keep if you actually use it)
-      - name: Build Docker image
-        run: docker build -t ${{ github.repository }}:${{ github.sha }} .
-
       # Deploy with Wrangler CLI v4 via npx
       - name: Deploy with npx Wrangler v4
         run: npx wrangler@^4 deploy
