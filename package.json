@@ -5,8 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "npm-run-all --parallel dev:server dev:styles",
-    "dev:server": "tsx --watch src/server.ts",
-    "dev:debug": "tsx --inspect=9229 --watch src/server.ts",
+    "dev:server": "node --inspect=9229 -r tsx/cjs --watch src/server.ts",
+    "dev:debug": "node --inspect=9229 -r tsx/cjs --inspect=9229 --watch src/server.ts",
     "debug": "node --inspect=9229 -r tsx/cjs src/server.ts",
     "dev:styles": "npm-run-all --parallel dev:tailwind dev:less",
     "dev:tailwind": "node scripts/tailwind-build.js --watch",
@@ -45,6 +45,7 @@
   "license": "MIT",
   "dependencies": {
     "@apollo/client": "^4.0.4",
+    "@cloudflare/containers": "^0.0.28",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "cross-fetch": "^4.1.0",

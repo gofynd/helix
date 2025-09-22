@@ -1,0 +1,51 @@
+name: Deploy to Cloudflare Containers
+
+on:
+  push:
+    branches: [ main, develop, feature/cf-container/improvements ]
+  pull_request:
+    branches: [ main ]
+
+# Global env (available to all jobs)
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_SUBDOMAIN: ${{ secrets.CLOUDFLARE_SUBDOMAIN }}
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: CloudFlare Containers deployment
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests (PRs only)
+        if: github.event_name == 'pull_request'
+        run: npm test
+
+      # Deploy with Wrangler CLI v4 via npx
+      - name: Deploy with npx Wrangler v4
+        run: npx wrangler@^4 deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

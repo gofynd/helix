@@ -151,6 +151,9 @@ coverage/
 .dockerignore
 Dockerfile
 
+# Cloudflare Wrangler
+.wrangler/
+
 # Security - Additional patterns
 *.key
 *.pem
